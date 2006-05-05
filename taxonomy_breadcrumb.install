@@ -1,0 +1,31 @@
+<?php
+// $Id$.
+
+/**
+ * @file
+ * .install file for the taxonomy_breadcrumb module.
+ */
+
+
+/**
+ * Implementation of hook_install().
+ */
+function taxonomy_breadcrumb_install() {
+  switch ($GLOBALS['db_type']) {
+    case 'mysql':
+    case 'mysqli':
+      db_query("CREATE TABLE {taxonomy_breadcrumb_vocabulary} (
+                vid int(10) unsigned NOT NULL default '0',
+                path varchar(128) NOT NULL default '',
+                PRIMARY KEY (vid)
+                ) TYPE=MyISAM /*!40100 DEFAULT CHARACTER SET utf8 */;");
+    
+
+      db_query("CREATE TABLE taxonomy_breadcrumb_term (
+                tid int(10) unsigned NOT NULL default '0',
+                path varchar(128) NOT NULL default '',
+                PRIMARY KEY (tid)
+                ) TYPE=MyISAM /*!40100 DEFAULT CHARACTER SET utf8 */;");
+      break;
+  }
+}
