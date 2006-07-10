@@ -21,7 +21,7 @@ function taxonomy_breadcrumb_install() {
                 ) TYPE=MyISAM /*!40100 DEFAULT CHARACTER SET utf8 */;");
     
 
-      db_query("CREATE TABLE taxonomy_breadcrumb_term (
+      db_query("CREATE TABLE {taxonomy_breadcrumb_term} (
                 tid int(10) unsigned NOT NULL default '0',
                 path varchar(128) NOT NULL default '',
                 PRIMARY KEY (tid)
