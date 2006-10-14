@@ -39,6 +39,10 @@
  */
 
 
+// default value for Advanced Settings, Node Types
+define('TAXONOMY_BREADCRUMB_NODE_TYPES_DEFAULT', 'book');  
+
+
 /**
  * Return lightest term for given node ($nid).
  * Similar to taxonomy_node_get_terms, but only return the lightest term in the 
@@ -86,16 +90,23 @@ function taxonomy_breadcrumb_get_term_path($tid) {
  * If the current drupal path (q=) is /node/nid, generate the breadcrumb trail 
  * based on nid.
  */
-function taxonomy_breadcrumb_generate_breadcrumb() {
+function taxonomy_breadcrumb_generate_breadcrumb($nid) {
 
-  // Check for arg(2) to be null, otherwise we would change breadcrumbs on 
-  // /node/1/edit pages.
-  if (arg(0) == 'node' && arg(2) == NULL) {
+  // Load node from database, we will need to know the node type (page, book, etc.)
+  $node = node_load($nid);
+  
+  // See if the node type of the current node is part of the node types listed on the advanced settings page.
+  $array_of_types = explode(' ', variable_get('taxonomy_breadcrumb_node_types', TAXONOMY_BREADCRUMB_NODE_TYPES_DEFAULT));
+  $in_list = in_array($node->type, $array_of_types);
+  
+  // if the node type IS IN     the node types list and the list IS     inclusive OR 
+  // if the node type IS NOT IN the node types list and the list IS NOT inclusive (e.g. exclusive)
+  // THEN modify the breadcrumb trail.
+  if ($in_list == variable_get('taxonomy_breadcrumb_include_nodes', FALSE) ) {
 
     // Extract lightest term from lightest vocabulary assosciated with node.
-    $nid = arg(1);
     $term = taxonomy_context_node_get_lightest_term($nid);
-    
+
     // HOME breadcrumb generation
     $home_text = variable_get('taxonomy_breadcrumb_home', '');
     if ($home_text != '') {
@@ -108,7 +119,7 @@ function taxonomy_breadcrumb_generate_breadcrumb() {
       $vocabulary = taxonomy_get_vocabulary($term->vid);
       $breadcrumb[] = l($vocabulary->name, $vocabulary_path);      
     }
-    
+
     // TERM breadcrumb generation
     $parent_terms = array_reverse(taxonomy_get_parents_all($term->tid));
     foreach ($parent_terms as $parent_term) {
@@ -123,7 +134,7 @@ function taxonomy_breadcrumb_generate_breadcrumb() {
     if (!variable_get('taxonomy_breadcrumb_show_current_term', TRUE)) {
       array_pop($breadcrumb);
     }
-    
+
     drupal_set_breadcrumb($breadcrumb);
   }
 }
@@ -138,7 +149,7 @@ function taxonomy_breadcrumb_settings() {
                   <p>[HOME] >> [VOCABULARY] >> TERM >> [TERM] ...</p>
                   <p><ul>
                   <li>The text displayed for HOME is configurable below.  The HOME breadcrumb (if present) will link to the homepage.  If the HOME breadcrumb text is not defined (blank), it will not appear in the breadcrumb trail.</li>
-                  <li>The VOCABULARY breadcrumb (if present) will link to an administrator defined page (node).  If the VOCABULARY does not have an adminstrator defined page, it will not appear in the breadcrumb trail. This can be configured on the add/edit vocabulary pages within %tax_link (taxonomy).</li>
+                  <li>The VOCABULARY breadcrumb (if present) will link to an administrator defined page (node).  If the VOCABULARY does not have an administrator defined page, it will not appear in the breadcrumb trail. This can be configured on the add/edit vocabulary pages within %tax_link (taxonomy).</li>
                   <li>Each TERM breadcrumb will link to either (1) taxonomy/term/tid by default, or (2) an administrator defined page (node) if one is defined for the term.  This can be configured on the add/edit term pages within %tax_link (taxonomy).</li>
                   </ul></p>
                   Examples:
@@ -153,8 +164,8 @@ function taxonomy_breadcrumb_settings() {
 
   $form['settings'] = array(
     '#type' => 'fieldset',
-    '#title' => t('Settings'),
-    '#collapsible' => FALSE,
+    '#title' => t('Basic Settings'),
+    '#collapsible' => TRUE,
   );
 
   $form['settings']['taxonomy_breadcrumb_home'] = array(
@@ -168,7 +179,41 @@ function taxonomy_breadcrumb_settings() {
     '#type' => 'checkbox',
     '#title' => t('Show current term in breadcrumb trail?'),
     '#default_value' => variable_get('taxonomy_breadcrumb_show_current_term', TRUE),
-    '#description' => t('When enabled, the lightest term assosciated with node is shown as the last breadcrumb in the breadcrumb trail.  When disabled, the only terms shown in the breadcrumb trail are parent terms (if any parents exist).  The recommended setting is enabled.'),
+    '#description' => t('When enabled, the lightest term associated with node is shown as the last breadcrumb in the breadcrumb trail.  When disabled, the only terms shown in the breadcrumb trail are parent terms (if any parents exist).  The recommended setting is enabled.'),
+  ); 
+
+  $form['advanced'] = array(
+    '#type' => 'fieldset',
+    '#description' => 'Use these advanced settings to control which node types taxonomy based breadcrumbs will be generated for.  This allows taxonomy_breadcrumb to peacefully coexist with modules that define their own breadcrumbs, such as the book module.  For typical drupal configurations, administrators will not need to modify these settings; however, if user contributed modules are enabled you may need to fine tune taxonomy_breadcrumb here.',
+    '#title' => t('Advanced Settings'),
+    '#collapsible' => TRUE,
+    '#collapsed' => TRUE,
+  );
+
+  $form['advanced']['taxonomy_breadcrumb_include_nodes'] = array(
+    '#type' => 'radios',
+    '#title' => t('Include or exclude the following node types'),
+    '#default_value' => variable_get('taxonomy_breadcrumb_include_nodes', FALSE),
+    '#options' => array(TRUE => t('Include'), FALSE => t('Exclude')),
+    '#weight' => 10,
+  );
+  
+  // Get all of the node types enabled.  I'd rather not call the node_info hook (since this isn't the 
+  // node module!), but I don't have much choice.  I can't get all base type names at once from 
+  // the function node_get_base (the function node_get_names provides all names, but not bases).
+  // Hack might be a strong word to describe the next few lines of code, but they do the job.
+  $node_bases = array();
+  $node_names = module_invoke_all('node_info'); 
+  foreach ($node_names as $value) {
+    $node_bases[] = $value['base'];
+  }
+
+  $form['advanced']['taxonomy_breadcrumb_nodes_types'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Node types to include or exclude'),
+    '#default_value' => variable_get('taxonomy_breadcrumb_node_types', TAXONOMY_BREADCRUMB_NODE_TYPES_DEFAULT),
+    '#description' => t('Enter a list of node types to include or exclude applying taxonomy based breadcrumbs to.  Separate multiple values with spaces. <p>Node types currently enabled:<ul><li>' . implode($node_bases, '</li><li>') . '</li></ul></p>'),
+    '#weight' => 20,
   ); 
 
   return $form;
@@ -188,8 +233,11 @@ function taxonomy_breadcrumb_menu($may_cache) {
 
   }
   else {
-  
-    taxonomy_breadcrumb_generate_breadcrumb();
+    // Check for arg(2) to be null, otherwise we would change breadcrumbs on 
+    // /node/1/edit pages.
+    if (arg(0) == 'node' && is_numeric(arg(1)) && arg(2) == NULL) {
+       taxonomy_breadcrumb_generate_breadcrumb(arg(1));  // arg(1) contains node id (nid)
+    }
   }
   return $items;
 }
