@@ -219,29 +219,16 @@ function taxonomy_breadcrumb_settings() {
   return $form;
 }
 
-
 /**
- * Implementation of hook_menu().
+ * Implementation of hook_nodeapi().
  */
-function taxonomy_breadcrumb_menu($may_cache) {
-
-  if ($may_cache) {
-    $items[] = array('path' => 'breadcrumb/', 'title' => t('taxonomy vocabulary'),
-      'callback' => 'taxonomy_context_vocabulary_page',
-      'access' => user_access('access content'),
-      'type' => MENU_CALLBACK);
-
+function taxonomy_breadcrumb_nodeapi(&$node, $op, $a3 = NULL, $a4 = NULL) { 
+  // If we are on a page view (not just a teaser), set the breadcrumb
+  // $a4 contains TRUE if we are on a page view
+  if ($op == 'view' && $a4) {
+    taxonomy_breadcrumb_generate_breadcrumb($node->nid);
   }
-  else {
-    // Check for arg(2) to be null, otherwise we would change breadcrumbs on 
-    // /node/1/edit pages.
-    if (arg(0) == 'node' && is_numeric(arg(1)) && arg(2) == NULL) {
-       taxonomy_breadcrumb_generate_breadcrumb(arg(1));  // arg(1) contains node id (nid)
-    }
-  }
-  return $items;
 }
-
 
 /**
  * Implementation of hook_help().
