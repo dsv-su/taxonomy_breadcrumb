@@ -27,5 +27,19 @@ function taxonomy_breadcrumb_install() {
                 PRIMARY KEY (tid)
                 ) TYPE=MyISAM /*!40100 DEFAULT CHARACTER SET utf8 */;");
       break;
+
+    case 'pgsql':
+      db_query("CREATE TABLE {taxonomy_breadcrumb_vocabulary} (
+                vid integer NOT NULL default '0',
+                path varchar(128) NOT NULL default '',
+                PRIMARY KEY (vid)
+                );");
+
+      db_query("CREATE TABLE {taxonomy_breadcrumb_term} (
+                tid integer NOT NULL default '0',
+                path varchar(128) NOT NULL default '',
+                PRIMARY KEY (tid)
+                );";
+      break;
   }
 }
