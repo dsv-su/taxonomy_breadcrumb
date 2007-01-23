@@ -8,15 +8,16 @@ msgid ""
 msgstr ""
 "Project-Id-Version: taxonomy_breadcrumb\n"
 "POT-Creation-Date: 2007-01-22 13:19+0100\n"
-"PO-Revision-Date: 2007-01-22 15:43+0100\n"
+"PO-Revision-Date: 2007-01-23 11:35+0100\n"
 "Last-Translator: piero <piero@localhost>\n"
-"Language-Team: italian translation <piero@tropic.it>\n"
+"Language-Team: tropic <piero@tropic.it>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
 "X-Poedit-Language: Italian\n"
 "X-Poedit-Country: ITALY\n"
+"X-Poedit-SourceCharset: utf-8\n"
 
 #: taxonomy_breadcrumb.module:151
 msgid "Taxonomy Breadcrumb"
@@ -67,8 +68,8 @@ msgid "Node types to include or exclude"
 msgstr "Tipi di nodi da includere o escludere"
 
 #: taxonomy_breadcrumb.module:211
-msgid "Enter a list of node types to include or exclude applying taxonomy based breadcrumbs to.  Separate multiple values with spaces. <p>Node types currently enabled"
-msgstr "Inserisci una lista di tipi di nodi da includere o escludere nell'applicazione del breadcrumb basato sulla tassonomia. Separare eventuali valori multipli mediante uno spazio.  <p>Tipi di nodo attualmente abilitati"
+msgid "Enter a list of node types to include or exclude applying taxonomy based breadcrumbs to.  Separate multiple values with spaces. <p>Node types currently enabled:"
+msgstr "Inserisci una lista di tipi di nodi da includere o escludere nell'applicazione del breadcrumb basato sulla tassonomia. Separare eventuali valori multipli mediante uno spazio.  <p>Tipi di nodo attualmente abilitati:"
 
 #: taxonomy_breadcrumb.module:236
 msgid "<p>See %link.</p>"

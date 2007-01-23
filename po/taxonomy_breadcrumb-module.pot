@@ -4,18 +4,20 @@
 # Copyright YEAR NAME <EMAIL@ADDRESS>
 # Generated from file: taxonomy_breadcrumb.module,v 1.5.2.1 2007/01/20 05:14:42 craig
 #
-#, fuzzy
 msgid ""
 msgstr ""
-"Project-Id-Version: PROJECT VERSION\n"
+"Project-Id-Version: taxonomy_breadcrumb\n"
 "POT-Creation-Date: 2007-01-22 15:51+0100\n"
-"PO-Revision-Date: YYYY-mm-DD HH:MM+ZZZZ\n"
-"Last-Translator: NAME <EMAIL@ADDRESS>\n"
-"Language-Team: LANGUAGE <EMAIL@ADDRESS>\n"
+"PO-Revision-Date: 2007-01-23 11:34+0100\n"
+"Last-Translator: piero <piero@localhost>\n"
+"Language-Team: tropic <piero@tropic.it>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Plural-Forms: nplurals=INTEGER; plural=EXPRESSION;\n"
+"Plural-Forms: nplurals=2; plural=n != 1;\n"
+"X-Poedit-Language: English\n"
+"X-Poedit-Country: ITALY\n"
+"X-Poedit-SourceCharset: utf-8\n"
 
 #: taxonomy_breadcrumb.module:151
 msgid "Taxonomy Breadcrumb"
@@ -74,7 +76,21 @@ msgid "<p>See %link.</p>"
 msgstr ""
 
 #: taxonomy_breadcrumb.module:239
-msgid "<p>The taxonomy_breadcrumb module generates taxonomy based breadcrumbs on node pages, where the breadcrumbs link to the normal taxonomy/term pages or to administrator defined pages.  Breadcrumbs take the following form:</p>\n                  <p>[HOME] >> [VOCABULARY] >> TERM >> [TERM] ...</p>\n                  <p><ul>\n                  <li>The text displayed for HOME is configurable below.  The HOME breadcrumb (if present) will link to the homepage.  If the HOME breadcrumb text is not defined (blank), it will not appear in the breadcrumb trail.</li>\n                  <li>The VOCABULARY breadcrumb (if present) will link to an administrator defined page (node).  If the VOCABULARY does not have an administrator defined page, it will not appear in the breadcrumb trail. This can be configured on the add/edit vocabulary pages within !tax_link (taxonomy).</li>\n                  <li>Each TERM breadcrumb will link to either (1) taxonomy/term/tid by default, or (2) an administrator defined page (node) if one is defined for the term.  This can be configured on the add/edit term pages within !tax_link (taxonomy).</li>\n                  </ul></p>\n                  Examples:\n                  <ul>\n                  <li>home >> term >> term</li>\n                  <li>mysite >> term >> term</li>\n                  <li>home >> vocabulary >> term >> term</li>\n                  <li>vocabulary >> term >> term</li>\n                  </ul>"
+msgid ""
+"<p>The taxonomy_breadcrumb module generates taxonomy based breadcrumbs on node pages, where the breadcrumbs link to the normal taxonomy/term pages or to administrator defined pages.  Breadcrumbs take the following form:</p>\n"
+"                  <p>[HOME] >> [VOCABULARY] >> TERM >> [TERM] ...</p>\n"
+"                  <p><ul>\n"
+"                  <li>The text displayed for HOME is configurable below.  The HOME breadcrumb (if present) will link to the homepage.  If the HOME breadcrumb text is not defined (blank), it will not appear in the breadcrumb trail.</li>\n"
+"                  <li>The VOCABULARY breadcrumb (if present) will link to an administrator defined page (node).  If the VOCABULARY does not have an administrator defined page, it will not appear in the breadcrumb trail. This can be configured on the add/edit vocabulary pages within !tax_link (taxonomy).</li>\n"
+"                  <li>Each TERM breadcrumb will link to either (1) taxonomy/term/tid by default, or (2) an administrator defined page (node) if one is defined for the term.  This can be configured on the add/edit term pages within !tax_link (taxonomy).</li>\n"
+"                  </ul></p>\n"
+"                  Examples:\n"
+"                  <ul>\n"
+"                  <li>home >> term >> term</li>\n"
+"                  <li>mysite >> term >> term</li>\n"
+"                  <li>home >> vocabulary >> term >> term</li>\n"
+"                  <li>vocabulary >> term >> term</li>\n"
+"                  </ul>"
 msgstr ""
 
 #: taxonomy_breadcrumb.module:270;280
