@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: taxonomy_breadcrumb\n"
 "POT-Creation-Date: 2007-01-22 13:19+0100\n"
-"PO-Revision-Date: 2007-01-23 11:35+0100\n"
+"PO-Revision-Date: 2007-01-25 11:57+0100\n"
 "Last-Translator: piero <piero@localhost>\n"
 "Language-Team: tropic <piero@tropic.it>\n"
 "MIME-Version: 1.0\n"
@@ -114,11 +114,11 @@ msgstr "Percorso (taxonomy_breadcrumb)"
 
 #: taxonomy_breadcrumb.module:273
 msgid "Specify the path this vocabulary links to as a breadcrumb.  If blank, the breadcrumb will not appear.  Use a relative path and don't add a trailing slash.  For example: node/42 or my/path/alias."
-msgstr "Specifica il percorso a cui questo vocabolario viene collegato nel breadcrumb. Se si lascia il campo vuoto, il Breadcrumb no verrà mostrato. Usare un percorso relativo senza aggiungere slash. Per es.: node/42 o mio_percorso/alias"
+msgstr "Specifica il percorso a cui questo vocabolario viene collegato nel breadcrumb. Se si lascia il campo vuoto, il Breadcrumb non verrà mostrato. Usare un percorso relativo senza aggiungere slash. Per es.: node/42 o mio_percorso/alias"
 
 #: taxonomy_breadcrumb.module:283
 msgid "Specify the path this term links to as a breadcrumb.  If blank, the breadcrumb links to the default taxonomy page.  Use a relative path and don't add a trailing slash.  For example: node/42 or my/path/alias."
-msgstr "Specifica il percorso a cui questo termine viene collegato nel breadcrumb. Se si lascia il campo vuoto, il Breadcrumb verrà riferito alla pagine default della tassonomia. no verrà mostrato. Usare un percorso relativo senza aggiungere slash. Per es. node/42 oppure mio_percorso/alias"
+msgstr "Specifica il percorso a cui questo termine viene collegato nel breadcrumb. Se si lascia il campo vuoto, il Breadcrumb verrà riferito alla pagine default della tassonomia. Usare un percorso relativo senza aggiungere slash. Per es. node/42 oppure mio_percorso/alias"
 
 #: taxonomy_breadcrumb.module:0
 msgid "taxonomy_breadcrumb"
