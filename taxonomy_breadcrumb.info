@@ -1,0 +1,7 @@
+; $Id$
+name = Taxonomy breadcrumb
+description = Enables taxonomy based breadcrumbs and allows for node assosciations with taxonomy terms.
+version = "6.x-0.1"
+dependencies[] = taxonomy
+core = 6.x
+
