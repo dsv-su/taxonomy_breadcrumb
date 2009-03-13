@@ -78,7 +78,7 @@ function taxonomy_breadcrumb_nodeapi(&$node, $op, $a3 = NULL, $a4 = NULL) {
     include_once drupal_get_path('module', 'taxonomy_breadcrumb') .'/taxonomy_breadcrumb.inc';
 
     // See if the node type of the current node is part of the node types listed on the advanced settings page.
-    $array_of_types = explode(' ', variable_get('taxonomy_breadcrumb_node_types', TAXONOMY_BREADCRUMB_NODE_TYPES_DEFAULT));
+    $array_of_types = array_filter((array)variable_get('taxonomy_breadcrumb_node_types', TAXONOMY_BREADCRUMB_NODE_TYPES_DEFAULT));
     $in_list = in_array($node->type, $array_of_types);
 
     // if the node type IS IN     the node types list and the list IS     inclusive OR
@@ -89,6 +89,9 @@ function taxonomy_breadcrumb_nodeapi(&$node, $op, $a3 = NULL, $a4 = NULL) {
       // Extract lightest term from lightest vocabulary assosciated with node.
       $term = _taxonomy_breadcrumb_node_get_lightest_term($node->nid);
       $breadcrumb = _taxonomy_breadcrumb_generate_breadcrumb($term->tid);
+      if (variable_get('taxonomy_breadcrumb_include_node_title', FALSE)) {
+        $breadcrumb[] = $node->title;
+      }
       drupal_set_breadcrumb($breadcrumb);
     }
   }
@@ -180,6 +183,7 @@ function taxonomy_breadcrumb_taxonomy($op, $type, $object = NULL) {
 
     // Set variables to used in SQL query to reflect if vocabulary or term is
     // being updated.
+
     if ($type == 'vocabulary') {
       $table = '{taxonomy_breadcrumb_vocabulary}';
       $key_type = 'vid';
@@ -190,22 +194,25 @@ function taxonomy_breadcrumb_taxonomy($op, $type, $object = NULL) {
       $key_type = 'tid';
       $old_path = _taxonomy_breadcrumb_get_term_path($object['tid']);
     }
-    $key = $object[$key_type];
-    $new_path = $object['taxonomy_breadcrumb_path'];
+    $key = isset($object[$key_type]) ? $object[$key_type] : NULL;
+    $new_path = isset($object['taxonomy_breadcrumb_path']) ? $object['taxonomy_breadcrumb_path'] : NULL;
+
+    if (!is_null($new_path)) { // Only modify database when the object has the 'taxonomy_breadcrumb_path' field
 
     // Delete record from taxonomy_breadcrumb_vocabulary or taxonomy_breadcrumb_term
-    if (drupal_strlen($new_path) == 0 && $old_path !== NULL) {
-      db_query("DELETE FROM $table WHERE $key_type = %d", $key);
-    }
+      if (drupal_strlen($new_path) == 0 && $old_path !== NULL) {
+        db_query("DELETE FROM $table WHERE $key_type = %d", $key);
+      }
 
-    // Update existing record in taxonomy_breadcrumb_vocabulary or taxonomy_breadcrumb_term
-    elseif (drupal_strlen($new_path) != 0 && $old_path != NULL) {
-      db_query("UPDATE $table SET path = '%s' WHERE $key_type = %d", $new_path, $key );
-    }
+      // Update existing record in taxonomy_breadcrumb_vocabulary or taxonomy_breadcrumb_term
+      elseif (drupal_strlen($new_path) != 0 && $old_path != NULL) {
+        db_query("UPDATE $table SET path = '%s' WHERE $key_type = %d", $new_path, $key );
+      }
 
-    // Create new record in taxonomy_breadcrumb_vocabulary or taxonomy_breadcrumb_term
-    elseif (drupal_strlen($new_path) != 0 && $old_path == NULL) {
-      db_query("INSERT INTO $table ($key_type, path) VALUES (%d, '%s')", $key, $new_path);
+      // Create new record in taxonomy_breadcrumb_vocabulary or taxonomy_breadcrumb_term
+      elseif (drupal_strlen($new_path) != 0 && $old_path == NULL) {
+        db_query("INSERT INTO $table ($key_type, path) VALUES (%d, '%s')", $key, $new_path);
+      }
     }
   }
 }

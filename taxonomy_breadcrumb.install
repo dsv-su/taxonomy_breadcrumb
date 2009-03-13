@@ -13,8 +13,12 @@ function taxonomy_breadcrumb_install() {
   // Create tables.
   drupal_install_schema('taxonomy_breadcrumb');
 
+  $weight = (int) db_result(db_query("SELECT weight FROM {system} WHERE name = 'taxonomy'"));
+  db_query("UPDATE {system} SET weight = %d WHERE name = 'taxonomy_breadcrumb'", $weight + 1);
+
   variable_set('taxonomy_breadcrumb_home', t('Home'));
   drupal_set_message('Taxonomy breadcrumb: Taxonomy based breadcrumbs should now appear on node pages and taxonomy/term pages.  For the most common applications this module will work "out of the box" and no further configuration is necessary.  If customization is desired settings can be changed on the '. l('administration page', 'admin/settings/taxonomy-breadcrumb') .'.');
+
 }
 
 /**
@@ -81,3 +85,10 @@ function taxonomy_breadcrumb_update_1() {
   return $ret;
 }
 
+function taxonomy_breadcrumb_update_6001() {
+  // Ensure this module's weight is larger than the core taxonomy module.
+  // This allows for this module's menu callback for taxonomy/term to get called
+  // instead of the core taxonomy/term callback.
+  $weight = (int) db_result(db_query("SELECT weight FROM {system} WHERE name = 'taxonomy'"));
+  db_query("UPDATE {system} SET weight = %d WHERE name = 'taxonomy_breadcrumb'", $weight + 1);
+}

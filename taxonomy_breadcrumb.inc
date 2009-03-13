@@ -15,7 +15,7 @@
  */
 function _taxonomy_breadcrumb_term_page($str_tids = '', $depth = 0, $op = 'page') {
   // Include the .inc file with all helper functions
-  require_once drupal_get_path('module', 'taxonomy') .'/taxonomy.pages.inc';
+  require_once(drupal_get_path('module', 'taxonomy') .'/taxonomy.pages.inc');
 
   // Call the core taxonomy_term_page function
   $output = taxonomy_term_page($str_tids, $depth, $op);
@@ -84,7 +84,7 @@ function _taxonomy_breadcrumb_generate_breadcrumb($tid, $is_term_page = FALSE) {
   $vocabulary_path = _taxonomy_breadcrumb_get_vocabulary_path($term->vid);
   if ($vocabulary_path != NULL) {
     $vocabulary = taxonomy_vocabulary_load($term->vid);
-    $breadcrumb[] = l($vocabulary->name, $vocabulary_path);
+    $breadcrumb[] = l(_taxonomy_breadcrumb_tt("taxonomy:vocabulary:$term->tid:name", $vocabulary->name), $vocabulary_path);
   }
 
   // TERM breadcrumb generation
@@ -96,10 +96,10 @@ function _taxonomy_breadcrumb_generate_breadcrumb($tid, $is_term_page = FALSE) {
     }
     // Do not create links to own self if we are on a taxonomy/term page.
     if ($is_term_page && $parent_term->tid == $tid) {
-      $breadcrumb[] = $parent_term->name;
+      $breadcrumb[] = _taxonomy_breadcrumb_tt("taxonomy:term:$parent_term->tid:name", $parent_term->name);
     }
     else {
-      $breadcrumb[] = l($parent_term->name, $term_path);
+      $breadcrumb[] = l(_taxonomy_breadcrumb_tt("taxonomy:term:$parent_term->tid:name", $parent_term->name), $term_path);
     }
   }
 
@@ -109,4 +109,14 @@ function _taxonomy_breadcrumb_generate_breadcrumb($tid, $is_term_page = FALSE) {
   }
   return $breadcrumb;
 
+}
+
+
+/**
+ * Helper function for when i18ntaxonomy module is not installed.
+ */
+
+function _taxonomy_breadcrumb_tt($string_id, $default, $language = NULL) {
+
+  return function_exists('tt') ? tt($string_id, $default, $language) : $default;
 }

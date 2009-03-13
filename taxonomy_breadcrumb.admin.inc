@@ -29,6 +29,14 @@ function taxonomy_breadcrumb_admin_settings() {
     '#default_value'  => variable_get('taxonomy_breadcrumb_show_current_term', TRUE),
     '#description'    => t('When enabled, the lightest term associated with node is shown as the last breadcrumb in the breadcrumb trail.  When disabled, the only terms shown in the breadcrumb trail are parent terms (if any parents exist).  The recommended setting is enabled.'),
   );
+  
+  $form['settings']['taxonomy_breadcrumb_include_node_title'] = array(
+    '#type'           => 'checkbox',
+    '#title'          => t('Show current node title in breadcrumb trail?'),
+    '#default_value'  => variable_get('taxonomy_breadcrumb_include_node_title', FALSE),
+    '#description'    => t('When enabled and when viewing a node, the node\'s title will be shown as the last breadcrumb in the breadcrumb trail.'),
+    '#weight'         => 30,
+  );
 
   $form['advanced'] = array(
     '#type'           => 'fieldset',
@@ -46,18 +54,21 @@ function taxonomy_breadcrumb_admin_settings() {
     '#weight'         => 10,
   );
 
-  // Get all of the node types enabled.
-  $node_bases = array();
-  $node_types = node_get_types();
-  foreach ($node_types as $node_type) {
-    $node_bases[] = $node_type->type;
+  $tb_types = (array) variable_get('taxonomy_breadcrumb_node_types', TAXONOMY_BREADCRUMB_NODE_TYPES_DEFAULT);
+  $default = array();
+  foreach ($tb_types as $index => $value) {
+    if ($value) {
+      $default[] = $index;
+    }
   }
 
   $form['advanced']['taxonomy_breadcrumb_node_types'] = array(
-    '#type'           => 'textfield',
+    '#type'           => 'checkboxes',
+    '#multiple'       => TRUE,
     '#title'          => t('Node types to include or exclude'),
-    '#default_value'  => variable_get('taxonomy_breadcrumb_node_types', TAXONOMY_BREADCRUMB_NODE_TYPES_DEFAULT),
-    '#description'    => t('Enter a list of node types to include or exclude applying taxonomy based breadcrumbs to.  Separate multiple values with spaces. <p>Node types currently enabled:') .'<ul><li>'. implode($node_bases, '</li><li>') .'</li></ul></p>',
+    '#default_value'  => $default,
+    '#options'        => array_map('check_plain', node_get_types('names')),
+    '#description'    => t('A list of node types to include or exclude applying taxonomy based breadcrumbs to.'),
     '#weight'         => 20,
   );
 
