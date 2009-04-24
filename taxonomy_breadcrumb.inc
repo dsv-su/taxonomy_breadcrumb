@@ -14,13 +14,30 @@
  * in the system table and is set in taxonomy_breadcrumb.install).
  */
 function _taxonomy_breadcrumb_term_page($str_tids = '', $depth = 0, $op = 'page') {
-  // Include the .inc file with all helper functions
-  require_once(drupal_get_path('module', 'taxonomy') .'/taxonomy.pages.inc');
+  static $callback = array();
+  if (empty($callback)) {
+    $callback = variable_get('taxonomy_breadcrumb_override_callback', array() );
+    if (!empty($callback)) {
+      $require_path = isset($callback['file path']) ? $callback['file path'] : drupal_get_path('module', $callback['module']);
+      require_once($require_path .'/'. $callback['file']);
+    }
+    else {
+      // Default to core taxonomy_term_page callback.
+      // Include the .inc file with all helper functions.
+      require_once(drupal_get_path('module', 'taxonomy') .'/taxonomy.pages.inc');
+    }
+  }
+  if (isset($callback['page callback'])) {
+    $func = $callback['page callback'];
+    // Assume that any function overriding the core taxonomy function would have the same parameters.
+    $output = $func($str_tids, $depth, $op);
+  }
+  else {
+    // Call the core taxonomy_term_page function.
+    $output = taxonomy_term_page($str_tids, $depth, $op);
+  }
 
-  // Call the core taxonomy_term_page function
-  $output = taxonomy_term_page($str_tids, $depth, $op);
-
-  // Use first term to generate breadcrumb trail
+  // Use first term to generate breadcrumb trail.
   $terms = taxonomy_terms_parse_string($str_tids);
   $breadcrumb = _taxonomy_breadcrumb_generate_breadcrumb($terms['tids'][0], TRUE);
   drupal_set_breadcrumb($breadcrumb);
@@ -33,11 +50,14 @@ function _taxonomy_breadcrumb_term_page($str_tids = '', $depth = 0, $op = 'page'
  * lightest vocab for the node.
  */
 function _taxonomy_breadcrumb_node_get_lightest_term($nid) {
-  // We only want the first row of the result--this is the lightest term of the
-  // lightest vocab.  This query should be the same as the query found in
-  // taxonomy_node_get_terms.
+
+/* We only want the first row of the result--this is the lightest term of the
+ * lightest vocab.  This query should be the same as the query found in
+ * taxonomy_node_get_terms.
+ */
   $result = db_query(db_rewrite_sql('SELECT t.* FROM {term_node} r INNER JOIN {term_data} t ON r.tid = t.tid INNER JOIN {vocabulary} v ON t.vid = v.vid WHERE r.nid = %d ORDER BY v.weight, t.weight, t.name', 't', 'tid'), $nid);
-  $term = db_fetch_object($result);  // extract first row of query
+  // Extract the first row of query.
+  $term = db_fetch_object($result);
   return $term;
 }
 
@@ -75,19 +95,19 @@ function _taxonomy_breadcrumb_generate_breadcrumb($tid, $is_term_page = FALSE) {
 
   $term = taxonomy_get_term($tid);
 
-  // HOME breadcrumb generation
+  // Generate the HOME breadcrumb.
   $home_text = variable_get('taxonomy_breadcrumb_home', '');
   if ($home_text != '') {
     $breadcrumb[] = l(t($home_text), NULL);
   }
-  // VOCABULARY breadcrumb generation
+  // Generate the VOCABULARY breadcrumb.
   $vocabulary_path = _taxonomy_breadcrumb_get_vocabulary_path($term->vid);
   if ($vocabulary_path != NULL) {
     $vocabulary = taxonomy_vocabulary_load($term->vid);
     $breadcrumb[] = l(_taxonomy_breadcrumb_tt("taxonomy:vocabulary:$term->tid:name", $vocabulary->name), $vocabulary_path);
   }
 
-  // TERM breadcrumb generation
+  // Generate the TERM breadcrumb.
   $parent_terms = array_reverse(taxonomy_get_parents_all($tid));
   foreach ($parent_terms as $parent_term) {
     $term_path = _taxonomy_breadcrumb_get_term_path($parent_term->tid);
@@ -103,20 +123,17 @@ function _taxonomy_breadcrumb_generate_breadcrumb($tid, $is_term_page = FALSE) {
     }
   }
 
-  // Remove current TERM from end of breadcrumb trail
+  // Optionally remove the current TERM from end of breadcrumb trail.
   if (!variable_get('taxonomy_breadcrumb_show_current_term', TRUE) && !is_null($breadcrumb)) {
       array_pop($breadcrumb);
   }
   return $breadcrumb;
-
 }
-
 
 /**
  * Helper function for when i18ntaxonomy module is not installed.
  */
 
 function _taxonomy_breadcrumb_tt($string_id, $default, $language = NULL) {
-
   return function_exists('tt') ? tt($string_id, $default, $language) : $default;
 }

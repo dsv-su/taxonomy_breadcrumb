@@ -1,5 +1,5 @@
 <?php
-// $Id$.
+// $Id$
 
 /**
  * @file
@@ -43,25 +43,14 @@ define('TAXONOMY_BREADCRUMB_NODE_TYPES_DEFAULT', 'book');
  */
 function taxonomy_breadcrumb_menu() {
   $items['admin/settings/taxonomy-breadcrumb'] = array(
-    'title' => 'Taxonomy Breadcrumb',
-    'description' => 'Configure how taxonomy based breadcrumbs are displayed.',
-    'file'              => 'taxonomy_breadcrumb.admin.inc',
-    'page callback' => 'drupal_get_form',
-    'page arguments' => array('taxonomy_breadcrumb_admin_settings'),
-    'access callback' => 'user_access',
+    'title'            => 'Taxonomy Breadcrumb',
+    'description'      => 'Configure how taxonomy based breadcrumbs are displayed.',
+    'file'             => 'taxonomy_breadcrumb.admin.inc',
+    'page callback'    => 'drupal_get_form',
+    'page arguments'   => array('taxonomy_breadcrumb_admin_settings'),
+    'access callback'  => 'user_access',
     'access arguments' => array('administer site configuration'),
-    'type' => MENU_NORMAL_ITEM, // optional
-  );
-
-  // Similiar to core menu item in taxonomy_menu, except callback is different
-  $items['taxonomy/term/%'] = array(
-    'title' => 'Taxonomy term',
-    'file'              => 'taxonomy_breadcrumb.inc',
-    'page callback'     => '_taxonomy_breadcrumb_term_page',
-    'page arguments'    => array(2),
-    'access callback' => 'user_access',
-    'access arguments' => array('access content'),
-    'type' => MENU_CALLBACK,
+    'type'             => MENU_NORMAL_ITEM,
   );
 
   return $items;
@@ -71,7 +60,7 @@ function taxonomy_breadcrumb_menu() {
  * Implementation of hook_nodeapi().
  */
 function taxonomy_breadcrumb_nodeapi(&$node, $op, $a3 = NULL, $a4 = NULL) {
-  // If we are on a page view (not just a teaser), set the breadcrumb
+  // If we are on a page view (not just a teaser), set the breadcrumb.
   // $a4 contains TRUE if we are on a page view
   if ($op == 'view' && $a4 && !drupal_is_front_page()) {
     // Include the .inc file with all helper functions
@@ -95,6 +84,18 @@ function taxonomy_breadcrumb_nodeapi(&$node, $op, $a3 = NULL, $a4 = NULL) {
       drupal_set_breadcrumb($breadcrumb);
     }
   }
+}
+
+/**
+ * Implementation of hook_menu_alter().
+ */
+function taxonomy_breadcrumb_menu_alter(&$callbacks) {
+  // Defined by taxonomy, but might be modified by another module.
+  $existing_callback = $callbacks['taxonomy/term/%'];
+  variable_set('taxonomy_breadcrumb_override_callback', $existing_callback);
+  $callbacks['taxonomy/term/%']['page callback'] = '_taxonomy_breadcrumb_term_page';
+  $callbacks['taxonomy/term/%']['file'] = 'taxonomy_breadcrumb.inc';
+  $callbacks['taxonomy/term/%']['file path'] = drupal_get_path('module', 'taxonomy_breadcrumb');
 }
 
 /**
@@ -132,19 +133,19 @@ function taxonomy_breadcrumb_help($path, $arg) {
  * of the vocabulary or term.
  */
 function taxonomy_breadcrumb_form_taxonomy_form_vocabulary_alter(&$form, &$form_state) {
-  // Include the .inc file with all helper functions
+  // Include the .inc file with all helper functions.
   include_once drupal_get_path('module', 'taxonomy_breadcrumb') .'/taxonomy_breadcrumb.admin.inc';
   include_once drupal_get_path('module', 'taxonomy_breadcrumb') .'/taxonomy_breadcrumb.inc';
 
-    $form['taxonomy_breadcrumb_path'] = array(
-      '#type' => 'textfield',
-      '#title' => t('Breadcrumb path (taxonomy_breadcrumb)'),
+  $form['taxonomy_breadcrumb_path'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Breadcrumb path (taxonomy_breadcrumb)'),
     '#default_value'  => _taxonomy_breadcrumb_get_vocabulary_path($form['vid']['#value']),
-      '#maxlength' => 128,
-      '#description' => t('Specify the path this vocabulary links to as a breadcrumb.  If blank, the breadcrumb will not appear.  Use a relative path and don\'t add a trailing slash.  For example: node/42 or my/path/alias.'),
-      '#weight' => 0,
-    );
-  }
+    '#maxlength' => 128,
+    '#description' => t('Specify the path this vocabulary links to as a breadcrumb.  If blank, the breadcrumb will not appear.  Use a relative path and don\'t add a trailing slash.  For example: node/42 or my/path/alias.'),
+    '#weight' => 0,
+  );
+}
 
 /**
  * Implementation of hook_form_alter().
@@ -155,18 +156,18 @@ function taxonomy_breadcrumb_form_taxonomy_form_vocabulary_alter(&$form, &$form_
  * of the vocabulary or term.
  */
 function taxonomy_breadcrumb_form_taxonomy_form_term_alter(&$form, &$form_state) {
-  // Include the .inc file with all helper functions
+  // Include the .inc file with all helper functions.
   include_once drupal_get_path('module', 'taxonomy_breadcrumb') .'/taxonomy_breadcrumb.inc';
 
-    $form['taxonomy_breadcrumb_path'] = array(
-      '#type' => 'textfield',
-      '#title' => t('Breadcrumb path (taxonomy_breadcrumb)'),
+  $form['taxonomy_breadcrumb_path'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Breadcrumb path (taxonomy_breadcrumb)'),
     '#default_value'  => _taxonomy_breadcrumb_get_term_path($form['tid']['#value']),
-      '#maxlength' => 128,
-      '#description' => t('Specify the path this term links to as a breadcrumb.  If blank, the breadcrumb links to the default taxonomy page.  Use a relative path and don\'t add a trailing slash.  For example: node/42 or my/path/alias.'),
-      '#weight' => 0,
-    );
-  }
+    '#maxlength' => 128,
+    '#description' => t('Specify the path this term links to as a breadcrumb.  If blank, the breadcrumb links to the default taxonomy page.  Use a relative path and don\'t add a trailing slash.  For example: node/42 or my/path/alias.'),
+    '#weight' => 0,
+  );
+}
 
 /**
  * Implementation of hook_taxonomy().  This implementation checks to see if a
@@ -175,14 +176,13 @@ function taxonomy_breadcrumb_form_taxonomy_form_term_alter(&$form, &$form_state)
  */
 function taxonomy_breadcrumb_taxonomy($op, $type, $object = NULL) {
 
-  // if (after a vocabulary or term is updated)
-  // called by module_invoke_all('taxonomy', 'update', 'term', $edit);  in taxonomy.module
+  // If (after a vocabulary or term is updated)
+  // called by module_invoke_all('taxonomy', 'update', 'term', $edit) in taxonomy.module.
   if ( $op == 'update' && ($type == 'vocabulary' || $type == 'term') ) {
-    // Include the .inc file with all helper functions
+    // Include the .inc file with all helper functions.
     include_once drupal_get_path('module', 'taxonomy_breadcrumb') .'/taxonomy_breadcrumb.inc';
 
-    // Set variables to used in SQL query to reflect if vocabulary or term is
-    // being updated.
+    // Set variables to used in SQL query to reflect if vocabulary or term is being updated.
 
     if ($type == 'vocabulary') {
       $table = '{taxonomy_breadcrumb_vocabulary}';
@@ -199,17 +199,17 @@ function taxonomy_breadcrumb_taxonomy($op, $type, $object = NULL) {
 
     if (!is_null($new_path)) { // Only modify database when the object has the 'taxonomy_breadcrumb_path' field
 
-    // Delete record from taxonomy_breadcrumb_vocabulary or taxonomy_breadcrumb_term
+      // Delete the record from taxonomy_breadcrumb_vocabulary or taxonomy_breadcrumb_term.
       if (drupal_strlen($new_path) == 0 && $old_path !== NULL) {
         db_query("DELETE FROM $table WHERE $key_type = %d", $key);
       }
 
-      // Update existing record in taxonomy_breadcrumb_vocabulary or taxonomy_breadcrumb_term
+      // Update the existing record in taxonomy_breadcrumb_vocabulary or taxonomy_breadcrumb_term.
       elseif (drupal_strlen($new_path) != 0 && $old_path != NULL) {
         db_query("UPDATE $table SET path = '%s' WHERE $key_type = %d", $new_path, $key );
       }
 
-      // Create new record in taxonomy_breadcrumb_vocabulary or taxonomy_breadcrumb_term
+      // Create a new record in taxonomy_breadcrumb_vocabulary or taxonomy_breadcrumb_term.
       elseif (drupal_strlen($new_path) != 0 && $old_path == NULL) {
         db_query("INSERT INTO $table ($key_type, path) VALUES (%d, '%s')", $key, $new_path);
       }
