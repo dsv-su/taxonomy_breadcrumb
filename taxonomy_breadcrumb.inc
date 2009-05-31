@@ -51,13 +51,13 @@ function _taxonomy_breadcrumb_term_page($str_tids = '', $depth = 0, $op = 'page'
  */
 function _taxonomy_breadcrumb_node_get_lightest_term($nid) {
 
-/* We only want the first row of the result--this is the lightest term of the
- * lightest vocab.  This query should be the same as the query found in
- * taxonomy_node_get_terms.
- */
-  $result = db_query(db_rewrite_sql('SELECT t.* FROM {term_node} r INNER JOIN {term_data} t ON r.tid = t.tid INNER JOIN {vocabulary} v ON t.vid = v.vid WHERE r.nid = %d ORDER BY v.weight, t.weight, t.name', 't', 'tid'), $nid);
+  // We only want the first row of the result. This is the lightest term of the
+  // lightest vocab.
+  $result = db_query(db_rewrite_sql('SELECT t.* FROM {term_node} r INNER JOIN {term_data} t ON r.tid = t.tid INNER JOIN {term_hierarchy} h ON t.tid = h.tid INNER JOIN {vocabulary} v ON t.vid = v.vid WHERE r.nid = %d ORDER BY v.weight, h.parent DESC, t.weight, t.name', 't', 'tid'), $nid);
+
   // Extract the first row of query.
   $term = db_fetch_object($result);
+
   return $term;
 }
 
