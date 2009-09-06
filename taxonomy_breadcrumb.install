@@ -41,7 +41,7 @@ function taxonomy_breadcrumb_uninstall() {
 function taxonomy_breadcrumb_schema() {
   return array(
     'taxonomy_breadcrumb_vocabulary' => array(
-      'description' => t('Stores categories for aggregator feeds and feed items.'),
+      'description' => 'Stores categories for aggregator feeds and feed items.',
       'fields' => array(
         'vid'   => array(
           'type'      => 'int',
@@ -56,7 +56,7 @@ function taxonomy_breadcrumb_schema() {
       'primary key' => array('vid'),
     ),
     'taxonomy_breadcrumb_term' => array(
-      'description' => t('Stores categories for aggregator feeds and feed items.'),
+      'description' => 'Stores categories for aggregator feeds and feed items.',
       'fields' => array(
         'tid'   => array(
           'type'      => 'int',
