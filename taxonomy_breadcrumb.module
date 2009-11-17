@@ -76,7 +76,7 @@ function taxonomy_breadcrumb_nodeapi(&$node, $op, $a3 = NULL, $a4 = NULL) {
     if ($in_list == variable_get('taxonomy_breadcrumb_include_nodes', FALSE) ) {
 
       // Extract lightest term from lightest vocabulary assosciated with node.
-      $term = _taxonomy_breadcrumb_node_get_lightest_term($node->nid);
+      $term = _taxonomy_breadcrumb_node_get_lightest_term($node);
       $breadcrumb = _taxonomy_breadcrumb_generate_breadcrumb($term->tid);
       if (variable_get('taxonomy_breadcrumb_include_node_title', FALSE)) {
         $breadcrumb[] = $node->title;
@@ -89,13 +89,21 @@ function taxonomy_breadcrumb_nodeapi(&$node, $op, $a3 = NULL, $a4 = NULL) {
 /**
  * Implementation of hook_menu_alter().
  */
-function taxonomy_breadcrumb_menu_alter(&$callbacks) {
-  // Defined by taxonomy, but might be modified by another module.
-  $existing_callback = $callbacks['taxonomy/term/%'];
-  variable_set('taxonomy_breadcrumb_override_callback', $existing_callback);
-  $callbacks['taxonomy/term/%']['page callback'] = '_taxonomy_breadcrumb_term_page';
-  $callbacks['taxonomy/term/%']['file'] = 'taxonomy_breadcrumb.inc';
-  $callbacks['taxonomy/term/%']['file path'] = drupal_get_path('module', 'taxonomy_breadcrumb');
+function taxonomy_breadcrumb_menu_alter(&$items) {
+  if (isset($items['taxonomy/term/%']['page callback'])) {
+    $item = &$items['taxonomy/term/%'];
+    // Store the original configuration, so we can pass it on to our own callback.
+    $callback = $item['page callback'];
+    $arguments = $item['page arguments'];
+    $file = $item['file'];
+    $filepath = isset($item['file path']) ? $item['file path'] : drupal_get_path('module', $item['module']);
+
+    // Alter the original callback.
+    $item['page callback'] = '_taxonomy_breadcrumb_term_page';
+    $item['page arguments'] = array_merge(array(2, $callback, $file, $filepath), $arguments);
+    $item['file'] = 'taxonomy_breadcrumb.inc';
+    $item['file path'] = drupal_get_path('module', 'taxonomy_breadcrumb');
+  }
 }
 
 /**

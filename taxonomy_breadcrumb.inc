@@ -7,58 +7,79 @@
  */
 
 /**
- * This function overrides the core taxonomy_term_page.  First, call the core
- * taxonomy_term_page.  Then, alter the breadcrumb trail.  This module's
- * hook_menu and a module weight greater than taxonomy's ensure this
- * function gets called for the taxonomy/term path (the module weight is
- * in the system table and is set in taxonomy_breadcrumb.install).
+ * Set a Taxonomy breadcrumb and call the original taxonomy/term/% callback.
+ *
+ * @param $tid
+ *   The TID of the term to call a callback for.
+ * @param $callback
+ *   The name of the original callback function.
+ * @param $file
+ *   The file the original term callback is in.
+ * @param $filepath
+ *   The path to $file.
+ * @param ...
+ *   Additional arguments to pass on to the callback.
+ *
+ * @ return
+ *   The return value of the original callback function.
  */
-function _taxonomy_breadcrumb_term_page($str_tids = '', $depth = 0, $op = 'page') {
-  static $callback = array();
-  if (empty($callback)) {
-    $callback = variable_get('taxonomy_breadcrumb_override_callback', array() );
-    if (!empty($callback)) {
-      $require_path = isset($callback['file path']) ? $callback['file path'] : drupal_get_path('module', $callback['module']);
-      require_once($require_path .'/'. $callback['file']);
-    }
-    else {
-      // Default to core taxonomy_term_page callback.
-      // Include the .inc file with all helper functions.
-      require_once(drupal_get_path('module', 'taxonomy') .'/taxonomy.pages.inc');
-    }
-  }
-  if (isset($callback['page callback'])) {
-    $func = $callback['page callback'];
-    // Assume that any function overriding the core taxonomy function would have the same parameters.
-    $output = $func($str_tids, $depth, $op);
-  }
-  else {
-    // Call the core taxonomy_term_page function.
-    $output = taxonomy_term_page($str_tids, $depth, $op);
-  }
-
+function _taxonomy_breadcrumb_term_page($tid, $callback, $file, $filepath) {
+  require_once($filepath .'/'. $file);
+  $arguments = array_slice(func_get_args(), 4);
+  $output =  call_user_func_array($callback, $arguments);
   // Use first term to generate breadcrumb trail.
-  $terms = taxonomy_terms_parse_string($str_tids);
+  $terms = taxonomy_terms_parse_string($tid);
   $breadcrumb = _taxonomy_breadcrumb_generate_breadcrumb($terms['tids'][0], TRUE);
   drupal_set_breadcrumb($breadcrumb);
   return $output;
 }
 
 /**
- * Return lightest term for given node ($nid).
- * Similar to taxonomy_node_get_terms, but only return the lightest term in the
- * lightest vocab for the node.
+ * Return lightest term for a given node.
  */
-function _taxonomy_breadcrumb_node_get_lightest_term($nid) {
-
-  // We only want the first row of the result. This is the lightest term of the
-  // lightest vocab.
-  $result = db_query(db_rewrite_sql('SELECT t.* FROM {term_node} r INNER JOIN {term_data} t ON r.tid = t.tid INNER JOIN {term_hierarchy} h ON t.tid = h.tid INNER JOIN {vocabulary} v ON t.vid = v.vid WHERE r.nid = %d ORDER BY v.weight, h.parent DESC, t.weight, t.name', 't', 'tid'), $nid);
-
-  // Extract the first row of query.
-  $term = db_fetch_object($result);
-
-  return $term;
+function _taxonomy_breadcrumb_node_get_lightest_term($node) {
+  $terms = taxonomy_node_get_terms($node);
+  if (!empty($terms)) {
+    if (count($terms) > 1) {
+      foreach ($terms as $term) {
+        // Only consider terms in the lightest vocabulary. 
+        if (!isset($vid)) {
+          $vid = $term->vid;
+        }
+        elseif ($term->vid != $vid) continue;
+        // If the term has parents, the weight of the term is the weight of the lightest parent.
+        $parents = taxonomy_get_parents_all($term->tid);
+        $depth = count($parents);
+        if ($depth > 0) {
+          $parent = array_pop($parents);
+          $weight = $parent->weight;
+        }
+        else {
+          $weight = $term->weight;
+        }
+        if ((isset($lweight) && ($weight < $lweight)) || !isset($lweight)) {
+          $lterm = $term;
+          $lweight = $weight;
+          $ldepth = $depth;
+        }
+        elseif (isset($lweight) && ($weight == $lweight)) {
+          // If the node has multiple child terms with the same parent, choose the child with the greatest depth.
+          if ($depth > $ldepth) {
+            $lterm = $term;
+            $ldepth = $depth;
+          }
+          elseif ($depth == $ldepth) {
+            // If the terms have the same depth, pick the term with the lightest weight.
+            $lterm = ($lterm->weight < $term->weight) ? $lterm : $term;
+          }
+        }
+      }
+      return $lterm;
+    }
+    else {
+      return array_pop($terms);
+    }
+  }
 }
 
 /**
@@ -114,12 +135,20 @@ function _taxonomy_breadcrumb_generate_breadcrumb($tid, $is_term_page = FALSE) {
     if ($term_path == NULL) {
       $term_path = taxonomy_term_path(taxonomy_get_term($parent_term->tid));
     }
+    $term_title = $parent_term->name;
+    // Use the SYNONYM instead of TERM, if we want to.
+    if (variable_get('taxonomy_breadcrumb_use_synonym', FALSE)) {
+      $synonyms = taxonomy_get_synonyms($parent_term->tid);
+      if (!empty($synonyms)) {
+        $term_title = $synonyms[0];
+      }
+    }
     // Do not create links to own self if we are on a taxonomy/term page.
     if ($is_term_page && $parent_term->tid == $tid) {
-      $breadcrumb[] = _taxonomy_breadcrumb_tt("taxonomy:term:$parent_term->tid:name", $parent_term->name);
+      $breadcrumb[] = _taxonomy_breadcrumb_tt("taxonomy:term:$parent_term->tid:name", $term_title);
     }
     else {
-      $breadcrumb[] = l(_taxonomy_breadcrumb_tt("taxonomy:term:$parent_term->tid:name", $parent_term->name), $term_path);
+      $breadcrumb[] = l(_taxonomy_breadcrumb_tt("taxonomy:term:$parent_term->tid:name", $term_title), $term_path);
     }
   }
 

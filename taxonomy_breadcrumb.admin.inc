@@ -30,6 +30,13 @@ function taxonomy_breadcrumb_admin_settings() {
     '#description'    => t('When enabled, the lightest term associated with node is shown as the last breadcrumb in the breadcrumb trail.  When disabled, the only terms shown in the breadcrumb trail are parent terms (if any parents exist).  The recommended setting is enabled.'),
   );
 
+  $form['settings']['taxonomy_breadcrumb_use_synonym'] = array(
+    '#type'           => 'checkbox',
+    '#title'          => t('Use the first term synonym instead of term name?'),
+    '#default_value'  => variable_get('taxonomy_breadcrumb_use_synonym', FALSE),
+    '#description'    => t('When enabled and when viewing a node, the term\'s first synonym will be used in the breadcrumb, instead of the term name.'),
+  );
+
   $form['settings']['taxonomy_breadcrumb_include_node_title'] = array(
     '#type'           => 'checkbox',
     '#title'          => t('Show current node title in breadcrumb trail?'),
