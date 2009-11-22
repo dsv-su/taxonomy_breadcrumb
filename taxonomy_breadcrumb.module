@@ -73,7 +73,7 @@ function taxonomy_breadcrumb_nodeapi(&$node, $op, $a3 = NULL, $a4 = NULL) {
     // if the node type IS IN     the node types list and the list IS     inclusive OR
     // if the node type IS NOT IN the node types list and the list IS NOT inclusive (e.g. exclusive)
     // THEN modify the breadcrumb trail.
-    if ($in_list == variable_get('taxonomy_breadcrumb_include_nodes', FALSE) ) {
+    if ($in_list == variable_get('taxonomy_breadcrumb_include_nodes', 0) ) {
 
       // Extract lightest term from lightest vocabulary assosciated with node.
       $term = _taxonomy_breadcrumb_node_get_lightest_term($node);
@@ -133,7 +133,7 @@ function taxonomy_breadcrumb_help($path, $arg) {
 }
 
 /**
- * Implementation of hook_form_alter().
+ * Implementation of hook_form_FORM_ID_alter().
  *
  * This must be used over hook_taxonomy to
  * add the Breadcrumb Path fields to the vocabulary and term forms.  The
@@ -156,7 +156,7 @@ function taxonomy_breadcrumb_form_taxonomy_form_vocabulary_alter(&$form, &$form_
 }
 
 /**
- * Implementation of hook_form_alter().
+ * Implementation of hook_form_FORM_ID_alter().
  *
  * This must be used over hook_taxonomy to
  * add the Breadcrumb Path fields to the vocabulary and term forms. The
@@ -164,17 +164,18 @@ function taxonomy_breadcrumb_form_taxonomy_form_vocabulary_alter(&$form, &$form_
  * of the vocabulary or term.
  */
 function taxonomy_breadcrumb_form_taxonomy_form_term_alter(&$form, &$form_state) {
-  // Include the .inc file with all helper functions.
-  include_once drupal_get_path('module', 'taxonomy_breadcrumb') .'/taxonomy_breadcrumb.inc';
-
-  $form['taxonomy_breadcrumb_path'] = array(
-    '#type' => 'textfield',
-    '#title' => t('Breadcrumb path (taxonomy_breadcrumb)'),
-    '#default_value'  => _taxonomy_breadcrumb_get_term_path($form['tid']['#value']),
-    '#maxlength' => 128,
-    '#description' => t('Specify the path this term links to as a breadcrumb.  If blank, the breadcrumb links to the default taxonomy page.  Use a relative path and don\'t add a trailing slash.  For example: node/42 or my/path/alias.'),
-    '#weight' => 0,
-  );
+  if (!(isset($_POST['op']) && $_POST['op'] == t('Delete')) || isset($_POST['confirm'])) { 
+    // Include the .inc file with all helper functions.
+    include_once drupal_get_path('module', 'taxonomy_breadcrumb') .'/taxonomy_breadcrumb.inc';
+    $form['taxonomy_breadcrumb_path'] = array(
+      '#type' => 'textfield',
+      '#title' => t('Breadcrumb path (taxonomy_breadcrumb)'),
+      '#default_value'  => _taxonomy_breadcrumb_get_term_path($form['tid']['#value']),
+      '#maxlength' => 128,
+      '#description' => t('Specify the path this term links to as a breadcrumb.  If blank, the breadcrumb links to the default taxonomy page.  Use a relative path and don\'t add a trailing slash.  For example: node/42 or my/path/alias.'),
+      '#weight' => 0,
+    );
+  }
 }
 
 /**
@@ -183,15 +184,11 @@ function taxonomy_breadcrumb_form_taxonomy_form_term_alter(&$form, &$form_state)
  * the taxonomy_breadcrumb database tables.
  */
 function taxonomy_breadcrumb_taxonomy($op, $type, $object = NULL) {
-
-  // If (after a vocabulary or term is updated)
-  // called by module_invoke_all('taxonomy', 'update', 'term', $edit) in taxonomy.module.
-  if ( $op == 'update' && ($type == 'vocabulary' || $type == 'term') ) {
+  if ($type == 'vocabulary' || $type == 'term') {
     // Include the .inc file with all helper functions.
     include_once drupal_get_path('module', 'taxonomy_breadcrumb') .'/taxonomy_breadcrumb.inc';
 
     // Set variables to used in SQL query to reflect if vocabulary or term is being updated.
-
     if ($type == 'vocabulary') {
       $table = '{taxonomy_breadcrumb_vocabulary}';
       $key_type = 'vid';
@@ -203,24 +200,37 @@ function taxonomy_breadcrumb_taxonomy($op, $type, $object = NULL) {
       $old_path = _taxonomy_breadcrumb_get_term_path($object['tid']);
     }
     $key = isset($object[$key_type]) ? $object[$key_type] : NULL;
-    $new_path = isset($object['taxonomy_breadcrumb_path']) ? $object['taxonomy_breadcrumb_path'] : NULL;
 
-    if (!is_null($new_path)) { // Only modify database when the object has the 'taxonomy_breadcrumb_path' field
+    switch ($op) {
+      case 'insert':
+      case 'update':
+        // If (after a vocabulary or term is updated)
+        // called by module_invoke_all('taxonomy', 'update', 'term', $edit) in taxonomy.module.
 
-      // Delete the record from taxonomy_breadcrumb_vocabulary or taxonomy_breadcrumb_term.
-      if (drupal_strlen($new_path) == 0 && $old_path !== NULL) {
+        $new_path = isset($object['taxonomy_breadcrumb_path']) ? $object['taxonomy_breadcrumb_path'] : NULL;
+
+        // Only modify database when the object has the 'taxonomy_breadcrumb_path' field
+        if (!is_null($new_path)) {
+
+          // Delete the record from taxonomy_breadcrumb_vocabulary or taxonomy_breadcrumb_term.
+          if (drupal_strlen($new_path) == 0 && $old_path !== NULL) {
+            db_query("DELETE FROM $table WHERE $key_type = %d", $key);
+          }
+
+          // Update the existing record in taxonomy_breadcrumb_vocabulary or taxonomy_breadcrumb_term.
+          elseif (drupal_strlen($new_path) != 0 && $old_path != NULL) {
+            db_query("UPDATE $table SET path = '%s' WHERE $key_type = %d", $new_path, $key );
+          }
+
+          // Create a new record in taxonomy_breadcrumb_vocabulary or taxonomy_breadcrumb_term.
+          elseif (drupal_strlen($new_path) != 0 && $old_path == NULL) {
+            db_query("INSERT INTO $table ($key_type, path) VALUES (%d, '%s')", $key, $new_path);
+          }
+        }
+        break;
+     case 'delete':
         db_query("DELETE FROM $table WHERE $key_type = %d", $key);
-      }
-
-      // Update the existing record in taxonomy_breadcrumb_vocabulary or taxonomy_breadcrumb_term.
-      elseif (drupal_strlen($new_path) != 0 && $old_path != NULL) {
-        db_query("UPDATE $table SET path = '%s' WHERE $key_type = %d", $new_path, $key );
-      }
-
-      // Create a new record in taxonomy_breadcrumb_vocabulary or taxonomy_breadcrumb_term.
-      elseif (drupal_strlen($new_path) != 0 && $old_path == NULL) {
-        db_query("INSERT INTO $table ($key_type, path) VALUES (%d, '%s')", $key, $new_path);
-      }
-    }
+        break;
+     }
   }
 }

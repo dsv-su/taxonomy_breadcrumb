@@ -56,8 +56,8 @@ function taxonomy_breadcrumb_admin_settings() {
   $form['advanced']['taxonomy_breadcrumb_include_nodes'] = array(
     '#type'           => 'radios',
     '#title'          => t('Include or exclude the following node types'),
-    '#default_value'  => variable_get('taxonomy_breadcrumb_include_nodes', FALSE),
-    '#options'        => array(TRUE => t('Include'), FALSE => t('Exclude')),
+    '#default_value'  => variable_get('taxonomy_breadcrumb_include_nodes', 0),
+    '#options'        => array(1 => t('Include'), 0 => t('Exclude')),
     '#weight'         => 10,
   );
 

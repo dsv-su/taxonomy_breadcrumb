@@ -92,3 +92,19 @@ function taxonomy_breadcrumb_update_6001() {
   $weight = (int) db_result(db_query("SELECT weight FROM {system} WHERE name = 'taxonomy'"));
   db_query("UPDATE {system} SET weight = %d WHERE name = 'taxonomy_breadcrumb'", $weight + 1);
 }
+
+/**
+ * Implementation of hook_update().
+ */
+function taxonomy_breadcrumb_update_6100() {
+  $ret = array();
+
+  if (variable_get('taxonomy_breadcrumb_include_nodes', 0)) {
+    variable_set('taxonomy_breadcrumb_include_nodes', 1);
+  }
+  else {
+    variable_set('taxonomy_breadcrumb_include_nodes', 0);
+  }
+
+  return $ret;
+}
