@@ -112,23 +112,27 @@ function taxonomy_breadcrumb_menu_alter(&$items) {
 function taxonomy_breadcrumb_help($path, $arg) {
   switch ($path) {
     case 'admin/help#taxonomy_breadcrumb':
-      return t('<p>See %link.</p>', array('%link' => l('admin/settings/taxonomy-breadcrumb', 'admin/settings/taxonomy-breadcrumb')));
+      return '<p>'. t('See <a href="@admin">admin/settings/taxonomy-breadcrumb</a>.', array('@admin' => url('admin/settings/taxonomy-breadcrumb'))) .'</p>';
+
     case 'admin/settings/taxonomy-breadcrumb':
-      return t('The taxonomy_breadcrumb module generates taxonomy based breadcrumbs on node pages and taxonomy/term pages.  The breadcrumb trail takes on the form:
-                    <ul>[HOME] >> [VOCABULARY] >> TERM >> [TERM] ...</ul>
-                    <ul>
-                    <li>The text displayed for HOME is configurable below.  The <em>HOME </em>breadcrumb (if present) links to the homepage.  The text displayed for HOME is administrator configurable.  If the HOME breadcrumb is not defined by the administrator, it will not appear in the breadcrumb trail.</li>
-                    <li>The <em>VOCABULARY </em>breadcrumb (if present) will link to an administrator defined page.  If the VOCABULARY does not have an administrator defined page, it will not appear in the breadcrumb trail. This can be configured on the add/edit vocabulary pages within !tax_link (taxonomy).</li>
-                    <li>Each <em>TERM </em>breadcrumb will link to either (1) taxonomy/term/tid by default, or (2) an administrator defined page if one is defined for the term. This can be configured on the add/edit term pages within !tax_link (taxonomy).</li>
-                    </ul>
-                    <br />
-                    <p>Examples:
-                    <ul>
-                    <li>home >> term >> term</li>
-                    <li>mysite >> term >> term</li>
-                    <li>home >> vocabulary >> term >> term</li>
-                    <li>vocabulary >> term >> term</li>
-                    </ul>', array('!tax_link' => l('administer >> categories', 'admin/content/taxonomy')));
+      $output = '<p>'. t('The taxonomy_breadcrumb module generates taxonomy based breadcrumbs on node pages and taxonomy/term pages. The breadcrumb trail takes on the form:') . '</p>';
+      $output .= '<p>'. t('[HOME] >> [VOCABULARY] >> TERM >> [TERM] ...') . '</p>';
+
+      $output .= '<ul>';
+      $output .= '<li>'. t('The text displayed for HOME is configurable below. The <em>HOME</em> breadcrumb (if present) links to the homepage. The text displayed for HOME is configurable by an administrator. If the HOME breadcrumb is not defined by the administrator, it will not appear in the breadcrumb trail.') .'</li>';
+      $output .= '<li>'. t('The <em>VOCABULARY</em> breadcrumb (if present) will link to an administrator defined page. If the VOCABULARY does not have an administrator defined page, it will not appear in the breadcrumb trail. This can be configured on the add/edit vocabulary pages within <a href="@taxonomy">administer >> categories</a> (taxonomy).', array('@taxonomy' => url('admin/content/taxonomy'))) .'</li>';
+      $output .= '<li>'. t('Each <em>TERM</em> breadcrumb will link to either (1) taxonomy/term/tid by default, or (2) an administrator defined page if one is defined for the term. This can be configured on the add/edit term pages within <a href="@taxonomy">administer >> categories</a> (taxonomy).', array('@taxonomy' => url('admin/content/taxonomy'))) .'</li>';
+      $output .= '</ul>';
+
+      $output .= '<h3>'. t('Examples:') .'</h3>';
+      $output .= '<ul>';
+      $output .= '<li>'. t('home >> term >> term') .'</li>';
+      $output .= '<li>'. t('mysite >> term >> term') .'</li>';
+      $output .= '<li>'. t('home >> vocabulary >> term >> term') .'</li>';
+      $output .= '<li>'. t('vocabulary >> term >> term') .'</li>';
+      $output .= '</ul>';
+
+      return $output;
   }
 }
 
@@ -150,7 +154,7 @@ function taxonomy_breadcrumb_form_taxonomy_form_vocabulary_alter(&$form, &$form_
     '#title' => t('Breadcrumb path (taxonomy_breadcrumb)'),
     '#default_value'  => _taxonomy_breadcrumb_get_vocabulary_path($form['vid']['#value']),
     '#maxlength' => 128,
-    '#description' => t('Specify the path this vocabulary links to as a breadcrumb.  If blank, the breadcrumb will not appear.  Use a relative path and don\'t add a trailing slash.  For example: node/42 or my/path/alias.'),
+    '#description' => t("Specify the path this vocabulary links to as a breadcrumb. If blank, the breadcrumb will not appear. Use a relative path and don't add a trailing slash. For example: node/42 or my/path/alias."),
     '#weight' => 0,
   );
 }
@@ -164,7 +168,7 @@ function taxonomy_breadcrumb_form_taxonomy_form_vocabulary_alter(&$form, &$form_
  * of the vocabulary or term.
  */
 function taxonomy_breadcrumb_form_taxonomy_form_term_alter(&$form, &$form_state) {
-  if (!(isset($_POST['op']) && $_POST['op'] == t('Delete')) || isset($_POST['confirm'])) { 
+  if (!(isset($_POST['op']) && $_POST['op'] == t('Delete')) || isset($_POST['confirm'])) {
     // Include the .inc file with all helper functions.
     include_once drupal_get_path('module', 'taxonomy_breadcrumb') .'/taxonomy_breadcrumb.inc';
     $form['taxonomy_breadcrumb_path'] = array(
@@ -172,7 +176,7 @@ function taxonomy_breadcrumb_form_taxonomy_form_term_alter(&$form, &$form_state)
       '#title' => t('Breadcrumb path (taxonomy_breadcrumb)'),
       '#default_value'  => _taxonomy_breadcrumb_get_term_path($form['tid']['#value']),
       '#maxlength' => 128,
-      '#description' => t('Specify the path this term links to as a breadcrumb.  If blank, the breadcrumb links to the default taxonomy page.  Use a relative path and don\'t add a trailing slash.  For example: node/42 or my/path/alias.'),
+      '#description' => t("Specify the path this term links to as a breadcrumb. If blank, the breadcrumb links to the default taxonomy page. Use a relative path and don't add a trailing slash. For example: node/42 or my/path/alias."),
       '#weight' => 0,
     );
   }
@@ -228,9 +232,9 @@ function taxonomy_breadcrumb_taxonomy($op, $type, $object = NULL) {
           }
         }
         break;
-     case 'delete':
+      case 'delete':
         db_query("DELETE FROM $table WHERE $key_type = %d", $key);
         break;
-     }
+    }
   }
 }

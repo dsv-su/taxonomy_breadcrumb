@@ -36,13 +36,19 @@ function _taxonomy_breadcrumb_term_page($tid, $callback, $file, $filepath) {
 
 /**
  * Return lightest term for a given node.
+ *
+ * @param $node
+ *   The node object.
+ *
+ * @ return
+ *   The lightest term object associated with the node.
  */
 function _taxonomy_breadcrumb_node_get_lightest_term($node) {
   $terms = taxonomy_node_get_terms($node);
   if (!empty($terms)) {
     if (count($terms) > 1) {
       foreach ($terms as $term) {
-        // Only consider terms in the lightest vocabulary. 
+        // Only consider terms in the lightest vocabulary.
         if (!isset($vid)) {
           $vid = $term->vid;
         }
@@ -117,9 +123,9 @@ function _taxonomy_breadcrumb_generate_breadcrumb($tid, $is_term_page = FALSE) {
   $term = taxonomy_get_term($tid);
 
   // Generate the HOME breadcrumb.
-  $home_text = variable_get('taxonomy_breadcrumb_home', '');
+  $home_text = variable_get('taxonomy_breadcrumb_home', t('Home'));
   if ($home_text != '') {
-    $breadcrumb[] = l(t($home_text), NULL);
+    $breadcrumb[] = l($home_text, NULL);
   }
   // Generate the VOCABULARY breadcrumb.
   $vocabulary_path = _taxonomy_breadcrumb_get_vocabulary_path($term->vid);
