@@ -34,14 +34,14 @@ function taxonomy_breadcrumb_admin_settings() {
     '#type'           => 'checkbox',
     '#title'          => t('Use the first term synonym instead of term name'),
     '#default_value'  => variable_get('taxonomy_breadcrumb_use_synonym', FALSE),
-    '#description'    => t('If enabled and if viewing a node, the term\'s first synonym will be used in the breadcrumb, instead of the term name.'),
+    '#description'    => t("If enabled and if viewing a node, the term's first synonym will be used in the breadcrumb, instead of the term name."),
   );
 
   $form['settings']['taxonomy_breadcrumb_include_node_title'] = array(
     '#type'           => 'checkbox',
     '#title'          => t('Show current node title in breadcrumb trail'),
     '#default_value'  => variable_get('taxonomy_breadcrumb_include_node_title', FALSE),
-    '#description'    => t('If enabled and if viewing a node, the node\'s title will be shown as the last item in the breadcrumb trail.'),
+    '#description'    => t("If enabled and if viewing a node, the node's title will be shown as the last item in the breadcrumb trail."),
     '#weight'         => 30,
   );
 
@@ -75,7 +75,7 @@ function taxonomy_breadcrumb_admin_settings() {
     '#title'          => t('Node types to include or exclude'),
     '#default_value'  => $default,
     '#options'        => array_map('check_plain', node_get_types('names')),
-    '#description'    => t('A list of node types to include or exclude when applying taxonomy based breadcrumbs.'),
+    '#description'    => t('A list of node types to include or exclude when applying taxonomy-based breadcrumbs.'),
     '#weight'         => 20,
   );
 

@@ -75,20 +75,26 @@ function taxonomy_breadcrumb_schema() {
  * Implementation of hook_update().
  */
 function taxonomy_breadcrumb_update_1() {
+  $ret = array();
 
   // Ensure this module's weight is larger than the core taxonomy module.
   // This allows for this module's menu callback for taxonomy/term to get called
   // instead of the core taxonomy/term callback.
   $ret[] = update_sql("UPDATE {system} SET weight = 10 WHERE name = 'taxonomy_breadcrumb'");
+
   return $ret;
 }
 
 function taxonomy_breadcrumb_update_6001() {
+  $ret = array();
+
   // Ensure this module's weight is larger than the core taxonomy module.
   // This allows for this module's menu callback for taxonomy/term to get called
   // instead of the core taxonomy/term callback.
   $weight = (int) db_result(db_query("SELECT weight FROM {system} WHERE name = 'taxonomy'"));
   db_query("UPDATE {system} SET weight = %d WHERE name = 'taxonomy_breadcrumb'", $weight + 1);
+
+  return $ret;
 }
 
 /**
