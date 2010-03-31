@@ -141,6 +141,10 @@ function _taxonomy_breadcrumb_generate_breadcrumb($tid, $is_term_page = FALSE) {
     if ($term_path == NULL) {
       $term_path = taxonomy_term_path(taxonomy_get_term($parent_term->tid));
     }
+    if ($term_path == '<none>') {
+      continue;
+    }
+
     $term_title = $parent_term->name;
     // Use the SYNONYM instead of TERM, if we want to.
     if (variable_get('taxonomy_breadcrumb_use_synonym', FALSE)) {
@@ -151,7 +155,7 @@ function _taxonomy_breadcrumb_generate_breadcrumb($tid, $is_term_page = FALSE) {
     }
     // Do not create links to own self if we are on a taxonomy/term page.
     if ($is_term_page && $parent_term->tid == $tid) {
-      $breadcrumb[] = _taxonomy_breadcrumb_tt("taxonomy:term:$parent_term->tid:name", $term_title);
+      $breadcrumb[] = check_plain(_taxonomy_breadcrumb_tt("taxonomy:term:$parent_term->tid:name", $term_title));
     }
     else {
       $breadcrumb[] = l(_taxonomy_breadcrumb_tt("taxonomy:term:$parent_term->tid:name", $term_title), $term_path);

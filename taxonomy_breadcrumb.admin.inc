@@ -47,7 +47,7 @@ function taxonomy_breadcrumb_admin_settings() {
 
   $form['advanced'] = array(
     '#type'           => 'fieldset',
-    '#description'    => 'Use these advanced settings to control which node types the taxonomy-based breadcrumbs will be generated for.  This allows the taxonomy breadcrumb module to peacefully coexist with modules that define their own breadcrumbs, such as the book module. For typical Drupal configurations, administrators will not need to modify these settings. However, you may need to fine tune the taxonomy breadcrumb settings here if user contributed modules are enabled.',
+    '#description'    => t('Use these advanced settings to control which node types the taxonomy-based breadcrumbs will be generated for.  This allows the taxonomy breadcrumb module to peacefully coexist with modules that define their own breadcrumbs, such as the book module. For typical Drupal configurations, administrators will not need to modify these settings. However, you may need to fine tune the taxonomy breadcrumb settings here if user contributed modules are enabled.'),
     '#title'          => t('Advanced settings'),
     '#collapsible'    => TRUE,
     '#collapsed'      => TRUE,
