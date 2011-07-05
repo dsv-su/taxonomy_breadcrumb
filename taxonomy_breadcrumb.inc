@@ -5,34 +5,26 @@
  * helper functions for taxonomy_breadcrumb
  */
 
+
 /**
- * Set a Taxonomy breadcrumb and call the original taxonomy/term/% callback.
- *
- * @param $tid
- *   The TID of the term to call a callback for.
- * @param $callback
- *   The name of the original callback function.
- * @param $file
- *   The file the original term callback is in.
- * @param $filepath
- *   The path to $file.
- * @param ...
- *   Additional arguments to pass on to the callback.
- *
- * @ return
- *   The return value of the original callback function.
+ * Finds all terms associated with a node.
+ * This is a D7 Replacement for Drupal 6 taxonomy_node_get_terms.
  */
-function _taxonomy_breadcrumb_term_page($tid, $callback, $file, $filepath) {
-  if (is_file($filepath .'/'. $file)) {
-    require_once($filepath .'/'. $file);
+function taxonomy_breadcrumb_node_get_terms($node, $key = 'tid') {
+  static $terms;
+  if (!isset($terms[$node->vid][$key])) {
+    $query = db_select('taxonomy_index', 'r');
+    $t_alias = $query->join('taxonomy_term_data', 't', 'r.tid = t.tid');
+    $v_alias = $query->join('taxonomy_vocabulary', 'v', 't.vid = v.vid');
+    $query->fields( $t_alias );
+    $query->condition("r.nid", $node->nid);
+    $result = $query->execute();
+    $terms[$node->vid][$key] = array();
+    foreach ($result as $term) {
+      $terms[$node->vid][$key][$term->$key] = $term;
+    }
   }
-  $arguments = array_slice(func_get_args(), 4);
-  $output =  call_user_func_array($callback, $arguments);
-  // Use first term to generate breadcrumb trail.
-  $terms = taxonomy_terms_parse_string($tid);
-  $breadcrumb = _taxonomy_breadcrumb_generate_breadcrumb($terms['tids'][0], TRUE);
-  drupal_set_breadcrumb($breadcrumb);
-  return $output;
+  return $terms[$node->vid][$key];
 }
 
 /**
@@ -45,7 +37,7 @@ function _taxonomy_breadcrumb_term_page($tid, $callback, $file, $filepath) {
  *   The lightest term object associated with the node.
  */
 function _taxonomy_breadcrumb_node_get_lightest_term($node) {
-  $terms = taxonomy_node_get_terms($node);
+  $terms = taxonomy_breadcrumb_node_get_terms($node);
   if (!empty($terms)) {
     if (count($terms) > 1) {
       foreach ($terms as $term) {
@@ -53,7 +45,9 @@ function _taxonomy_breadcrumb_node_get_lightest_term($node) {
         if (!isset($vid)) {
           $vid = $term->vid;
         }
-        elseif ($term->vid != $vid) continue;
+        elseif ($term->vid != $vid) {
+          continue;
+        }
         // If the term has parents, the weight of the term is the weight of the lightest parent.
         $parents = taxonomy_get_parents_all($term->tid);
         $depth = count($parents);
@@ -94,11 +88,7 @@ function _taxonomy_breadcrumb_node_get_lightest_term($node) {
  * ($vid).  If a path doesn't exist, NULL is returned.
  */
 function _taxonomy_breadcrumb_get_vocabulary_path($vid) {
-  $result = db_query("SELECT path FROM {taxonomy_breadcrumb_vocabulary} WHERE vid = %d", $vid);
-  $path = NULL;
-  if ($row = db_fetch_array($result)) {
-    $path = $row['path'];
-  }
+  $path = db_query("SELECT path FROM {taxonomy_breadcrumb_vocabulary} WHERE vid = :vid", array(':vid' => $vid))->fetchField();
   return $path;
 }
 
@@ -107,11 +97,7 @@ function _taxonomy_breadcrumb_get_vocabulary_path($vid) {
  * If a path doesn't exist, NULL is returned.
  */
 function _taxonomy_breadcrumb_get_term_path($tid) {
-  $result = db_query("SELECT path FROM {taxonomy_breadcrumb_term} WHERE tid = %d", $tid);
-  $path = NULL;
-  if ($row = db_fetch_array($result)) {
-    $path = $row['path'];
-  }
+  $path = db_query("SELECT path FROM {taxonomy_breadcrumb_term} WHERE tid = :tid", array(':tid' => $tid))->fetchField();
   return $path;
 }
 
@@ -120,8 +106,7 @@ function _taxonomy_breadcrumb_get_term_path($tid) {
  * based on nid.
  */
 function _taxonomy_breadcrumb_generate_breadcrumb($tid, $is_term_page = FALSE) {
-
-  $term = taxonomy_get_term($tid);
+  $term = taxonomy_term_load($tid);
 
   // Generate the HOME breadcrumb.
   $home_text = variable_get('taxonomy_breadcrumb_home', t('Home'));
@@ -140,20 +125,24 @@ function _taxonomy_breadcrumb_generate_breadcrumb($tid, $is_term_page = FALSE) {
   foreach ($parent_terms as $parent_term) {
     $term_path = _taxonomy_breadcrumb_get_term_path($parent_term->tid);
     if ($term_path == NULL) {
-      $term_path = taxonomy_term_path(taxonomy_get_term($parent_term->tid));
+      $uri =  taxonomy_term_uri($parent_term);
+      $term_path = $uri['path'];
     }
     if ($term_path == '<none>') {
       continue;
     }
 
     $term_title = $parent_term->name;
+
     // Use the SYNONYM instead of TERM, if we want to.
-    if (variable_get('taxonomy_breadcrumb_use_synonym', FALSE)) {
-      $synonyms = taxonomy_get_synonyms($parent_term->tid);
-      if (!empty($synonyms)) {
-        $term_title = $synonyms[0];
-      }
-    }
+    // if (variable_get('taxonomy_breadcrumb_use_synonym', FALSE)) {
+    // TODO The taxonomy synonym functionality has been removed.
+    // TODO Is there a way to do this?
+    //  $synonyms = array() /*taxonomy_get_synonyms($parent_term->tid)*/;
+    //  if (!empty($synonyms)) {
+    //    $term_title = $synonyms[0];
+    //  }
+    // }
     // Do not create links to own self if we are on a taxonomy/term page.
     if ($is_term_page && $parent_term->tid == $tid) {
       $breadcrumb[] = check_plain(_taxonomy_breadcrumb_tt("taxonomy:term:$parent_term->tid:name", $term_title));
@@ -165,7 +154,7 @@ function _taxonomy_breadcrumb_generate_breadcrumb($tid, $is_term_page = FALSE) {
 
   // Optionally remove the current TERM from end of breadcrumb trail.
   if (!variable_get('taxonomy_breadcrumb_show_current_term', TRUE) && !is_null($breadcrumb)) {
-      array_pop($breadcrumb);
+    array_pop($breadcrumb);
   }
   return $breadcrumb;
 }
@@ -173,7 +162,6 @@ function _taxonomy_breadcrumb_generate_breadcrumb($tid, $is_term_page = FALSE) {
 /**
  * Helper function for when i18ntaxonomy module is not installed.
  */
-
 function _taxonomy_breadcrumb_tt($string_id, $default, $language = NULL) {
   return function_exists('tt') ? tt($string_id, $default, $language) : $default;
 }
