@@ -118,7 +118,8 @@ function taxonomy_breadcrumb_page_alter(&$page) {
 
     // Add the page title.
     if (variable_get('taxonomy_breadcrumb_page_title', FALSE)) {
-      $breadcrumb[] = check_plain($page_term->name);
+      $term = taxonomy_term_load(arg(2));
+      $breadcrumb[] = check_plain($term->name);
     }
 
     drupal_set_breadcrumb($breadcrumb);
