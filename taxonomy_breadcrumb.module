@@ -52,7 +52,7 @@ function taxonomy_breadcrumb_menu() {
  * Implements hook_node_view().
  */
 function taxonomy_breadcrumb_node_view($node, $view_mode = 'full') {
-  if ($view_mode = 'full' && !drupal_is_front_page()) {
+  if ($view_mode == 'full' && !drupal_is_front_page()) {
     // Include the .inc file with all helper functions
     module_load_include('inc', 'taxonomy_breadcrumb');
 
