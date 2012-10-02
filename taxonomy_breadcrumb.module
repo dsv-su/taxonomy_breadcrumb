@@ -129,6 +129,11 @@ function taxonomy_breadcrumb_page_alter(&$page) {
  * Implements hook_form_FORM_ID_alter().
  */
 function taxonomy_breadcrumb_form_taxonomy_form_vocabulary_alter(&$form, &$form_state) {
+  // Do not alter on deletion.
+  if (isset($form_state['confirm_delete']) && isset($form_state['values']['vid'])) {
+    return;
+  }
+
   // Include the .inc file with all helper functions.
   module_load_include('inc', 'taxonomy_breadcrumb', 'taxonomy_breadcrumb.admin');
   module_load_include('inc', 'taxonomy_breadcrumb');
