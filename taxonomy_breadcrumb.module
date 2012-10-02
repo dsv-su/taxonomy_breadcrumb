@@ -112,9 +112,9 @@ function taxonomy_breadcrumb_help($path, $arg) {
  */
 function taxonomy_breadcrumb_page_alter(&$page) {
   // Set the breadcrumb on taxonomy term pages.
-  if ($page_term = menu_get_object('taxonomy_term', 2)) {
+  if (arg(0) == 'taxonomy' && arg(1) == 'term' && is_numeric(arg(2))) {
     module_load_include('inc', 'taxonomy_breadcrumb');
-    $breadcrumb = _taxonomy_breadcrumb_generate_breadcrumb($page_term->tid, TRUE);
+    $breadcrumb = _taxonomy_breadcrumb_generate_breadcrumb(arg(2), TRUE);
     drupal_set_breadcrumb($breadcrumb);
   }
 }
