@@ -66,8 +66,8 @@ function taxonomy_breadcrumb_node_view($node, $view_mode = 'full') {
     if ($in_list == variable_get('taxonomy_breadcrumb_include_nodes', 0) ) {
 
       // Extract lightest term from lightest vocabulary assosciated with node.
-      $term = _taxonomy_breadcrumb_node_get_lightest_term($node);
-      $breadcrumb = _taxonomy_breadcrumb_generate_breadcrumb($term->tid);
+      $tid = _taxonomy_breadcrumb_node_get_lightest_term($node->nid);
+      $breadcrumb = _taxonomy_breadcrumb_generate_breadcrumb($tid);
       if (variable_get('taxonomy_breadcrumb_include_node_title', FALSE)) {
         $breadcrumb[] = check_plain($node->title);
       }
