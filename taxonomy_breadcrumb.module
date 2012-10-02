@@ -115,6 +115,12 @@ function taxonomy_breadcrumb_page_alter(&$page) {
   if (arg(0) == 'taxonomy' && arg(1) == 'term' && is_numeric(arg(2))) {
     module_load_include('inc', 'taxonomy_breadcrumb');
     $breadcrumb = _taxonomy_breadcrumb_generate_breadcrumb(arg(2), TRUE);
+
+    // Add the page title.
+    if (variable_get('taxonomy_breadcrumb_page_title', FALSE)) {
+      $breadcrumb[] = check_plain($page_term->name);
+    }
+
     drupal_set_breadcrumb($breadcrumb);
   }
 }

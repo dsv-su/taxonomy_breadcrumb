@@ -127,10 +127,11 @@ function _taxonomy_breadcrumb_generate_breadcrumb($tid, $is_term_page = FALSE) {
     }
   }
 
-  // Optionally remove the current TERM from end of breadcrumb trail.
-  if (!variable_get('taxonomy_breadcrumb_show_current_term', TRUE) && !is_null($breadcrumb)) {
+  // Remove the breadcrumb for the term currently being viewed.
+  if (!is_null($breadcrumb) && $is_term_page) {
     array_pop($breadcrumb);
   }
+
   return $breadcrumb;
 }
 
