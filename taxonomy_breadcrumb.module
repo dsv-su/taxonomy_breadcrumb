@@ -64,14 +64,19 @@ function taxonomy_breadcrumb_node_view($node, $view_mode = 'full') {
     // if the node type IS NOT IN the node types list and the list IS NOT inclusive (e.g. exclusive)
     // THEN modify the breadcrumb trail.
     if ($in_list == variable_get('taxonomy_breadcrumb_include_nodes', 0) ) {
+      $breadcrumb = array();
 
-      // Extract lightest term from lightest vocabulary assosciated with node.
-      $tid = _taxonomy_breadcrumb_node_get_lightest_term($node->nid);
-      $breadcrumb = _taxonomy_breadcrumb_generate_breadcrumb($tid);
-      if (variable_get('taxonomy_breadcrumb_include_node_title', FALSE)) {
-        $breadcrumb[] = check_plain($node->title);
+      // Only take over breadcrumbs if terms are associated with the node.
+      if ($tid = _taxonomy_breadcrumb_node_get_lightest_term($node->nid)) {
+        // Generate the breadcrumb using the lightest vocabulary/term found.
+        $breadcrumb = _taxonomy_breadcrumb_generate_breadcrumb($tid);
+
+        if (variable_get('taxonomy_breadcrumb_page_title', FALSE)) {
+          $breadcrumb[] = check_plain($node->title);
+        }
+
+        drupal_set_breadcrumb($breadcrumb);
       }
-      drupal_set_breadcrumb($breadcrumb);
     }
   }
 }
