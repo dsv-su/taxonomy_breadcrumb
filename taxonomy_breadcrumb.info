@@ -1,5 +1,5 @@
 name = Taxonomy breadcrumb
-description = "Enables taxonomy based breadcrumbs and allows for node assosciations with taxonomy terms."
+description = "Enables taxonomy based breadcrumbs and allows for node associations with taxonomy terms."
 dependencies[] = taxonomy
 core = 7.x
 configure = admin/config/user-interface/taxonomy-breadcrumb
