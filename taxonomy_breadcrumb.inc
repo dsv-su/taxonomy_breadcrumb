@@ -100,7 +100,7 @@ function _taxonomy_breadcrumb_generate_breadcrumb($tid, $is_term_page = FALSE) {
   foreach ($parent_terms as $parent_term) {
     $term_path = _taxonomy_breadcrumb_get_term_path($parent_term->tid);
     if ($term_path == NULL) {
-      $uri =  taxonomy_term_uri($parent_term);
+      $uri = taxonomy_term_uri($parent_term);
       $term_path = $uri['path'];
     }
     if ($term_path == '<none>') {
@@ -109,15 +109,6 @@ function _taxonomy_breadcrumb_generate_breadcrumb($tid, $is_term_page = FALSE) {
 
     $term_title = $parent_term->name;
 
-    // Use the SYNONYM instead of TERM, if we want to.
-    // if (variable_get('taxonomy_breadcrumb_use_synonym', FALSE)) {
-    // TODO The taxonomy synonym functionality has been removed.
-    // TODO Is there a way to do this?
-    //  $synonyms = array() /*taxonomy_get_synonyms($parent_term->tid)*/;
-    //  if (!empty($synonyms)) {
-    //    $term_title = $synonyms[0];
-    //  }
-    // }
     // Do not create links to own self if we are on a taxonomy/term page.
     if ($is_term_page && $parent_term->tid == $tid) {
       $breadcrumb[] = check_plain(_taxonomy_breadcrumb_tt("taxonomy:term:$parent_term->tid:name", $term_title));

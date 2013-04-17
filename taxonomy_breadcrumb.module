@@ -31,6 +31,31 @@
 define('TAXONOMY_BREADCRUMB_NODE_TYPES_DEFAULT', 'book');
 
 /**
+ * Implements hook_help().
+ */
+function taxonomy_breadcrumb_help($path, $arg) {
+  switch ($path) {
+    case 'admin/help#taxonomy_breadcrumb':
+      $output = '<p>' . t('The taxonomy_breadcrumb module generates taxonomy based breadcrumbs on node pages and taxonomy/term pages. The breadcrumb trail takes on the form:') . '</p>';
+      $output .= '<p>' . t('[HOME] >> [VOCABULARY] >> TERM >> [TERM] ...') . '</p>';
+      $output .= '<ul>';
+      $output .= '<li>' . t('The text displayed for HOME is configurable below. The <em>HOME</em> breadcrumb (if present) links to the homepage. The text displayed for HOME is configurable by an administrator. If the HOME breadcrumb is not defined by the administrator, it will not appear in the breadcrumb trail.') . '</li>';
+      $output .= '<li>' . t('The <em>VOCABULARY</em> breadcrumb (if present) will link to an administrator defined page. If the VOCABULARY does not have an administrator defined page, it will not appear in the breadcrumb trail. This can be configured on the add/edit vocabulary pages within <a href="@taxonomy">Structure >> Taxonomy</a>', array('@taxonomy' => url('admin/structure/taxonomy'))) . '</li>';
+      $output .= '<li>' . t('Each <em>TERM</em> breadcrumb will link to either (1) taxonomy/term/tid by default, or (2) an administrator defined page if one is defined for the term. This can be configured on the add/edit term pages within <a href="@taxonomy">Structure >> Taxonomy</a>', array('@taxonomy' => url('admin/structure/taxonomy'))) . '</li>';
+      $output .= '</ul>';
+      $output .= '<h3>' . t('Examples:') . '</h3>';
+      $output .= '<ul>';
+      $output .= '<li>' . t('home >> term >> term') . '</li>';
+      $output .= '<li>' . t('mysite >> term >> term') . '</li>';
+      $output .= '<li>' . t('home >> vocabulary >> term >> term') . '</li>';
+      $output .= '<li>' . t('vocabulary >> term >> term') . '</li>';
+      $output .= '</ul>';
+
+      return $output;
+  }
+}
+
+/**
  * Implements hook_menu().
  */
 function taxonomy_breadcrumb_menu() {
@@ -52,8 +77,9 @@ function taxonomy_breadcrumb_menu() {
  * Implements hook_node_view().
  */
 function taxonomy_breadcrumb_node_view($node, $view_mode = 'full') {
+  // @TODO : Let user choose the view mode.
   if ($view_mode == 'full' && !drupal_is_front_page()) {
-    // Include the .inc file with all helper functions
+    // Include the .inc file with all helper functions.
     module_load_include('inc', 'taxonomy_breadcrumb');
 
     // See if the node type of the current node is part of the node types listed on the advanced settings page.
@@ -82,48 +108,35 @@ function taxonomy_breadcrumb_node_view($node, $view_mode = 'full') {
 }
 
 /**
- * Implements hook_help().
- */
-function taxonomy_breadcrumb_help($path, $arg) {
-  switch ($path) {
-    case 'admin/help#taxonomy_breadcrumb':
-      $output = '<p>' . t('The taxonomy_breadcrumb module generates taxonomy based breadcrumbs on node pages and taxonomy/term pages. The breadcrumb trail takes on the form:') . '</p>';
-      $output .= '<p>' . t('[HOME] >> [VOCABULARY] >> TERM >> [TERM] ...') . '</p>';
-      $output .= '<ul>';
-      $output .= '<li>' . t('The text displayed for HOME is configurable below. The <em>HOME</em> breadcrumb (if present) links to the homepage. The text displayed for HOME is configurable by an administrator. If the HOME breadcrumb is not defined by the administrator, it will not appear in the breadcrumb trail.') . '</li>';
-      $output .= '<li>' . t('The <em>VOCABULARY</em> breadcrumb (if present) will link to an administrator defined page. If the VOCABULARY does not have an administrator defined page, it will not appear in the breadcrumb trail. This can be configured on the add/edit vocabulary pages within <a href="@taxonomy">Structure >> Taxonomy</a>', array('@taxonomy' => url('admin/structure/taxonomy'))) . '</li>';
-      $output .= '<li>' . t('Each <em>TERM</em> breadcrumb will link to either (1) taxonomy/term/tid by default, or (2) an administrator defined page if one is defined for the term. This can be configured on the add/edit term pages within <a href="@taxonomy">Structure >> Taxonomy</a>', array('@taxonomy' => url('admin/structure/taxonomy'))) . '</li>';
-      $output .= '</ul>';
-      $output .= '<h3>' . t('Examples:') . '</h3>';
-      $output .= '<ul>';
-      $output .= '<li>' . t('home >> term >> term') . '</li>';
-      $output .= '<li>' . t('mysite >> term >> term') . '</li>';
-      $output .= '<li>' . t('home >> vocabulary >> term >> term') . '</li>';
-      $output .= '<li>' . t('vocabulary >> term >> term') . '</li>';
-      $output .= '</ul>';
-
-      return $output;
-  }
-}
-
-
-/**
  * Implements hook_page_alter().
  */
 function taxonomy_breadcrumb_page_alter(&$page) {
   // Set the breadcrumb on taxonomy term pages.
-  if (arg(0) == 'taxonomy' && arg(1) == 'term' && is_numeric(arg(2))) {
-    module_load_include('inc', 'taxonomy_breadcrumb');
-    $breadcrumb = _taxonomy_breadcrumb_generate_breadcrumb(arg(2), TRUE);
-
-    // Add the page title.
-    if (variable_get('taxonomy_breadcrumb_page_title', FALSE)) {
-      $term = taxonomy_term_load(arg(2));
-      $breadcrumb[] = check_plain($term->name);
-    }
-
-    drupal_set_breadcrumb($breadcrumb);
+  if ($term = menu_get_object('taxonomy_term', 2)) {
+    _taxonomy_breadcrumb_set_taxonomy_page_breadcrumb($term);
+    return;
   }
+  if (module_exists('views') && $term = taxonomy_term_load(menu_get_object('views_arg', 2))) {
+    _taxonomy_breadcrumb_set_taxonomy_page_breadcrumb($term);
+  }
+}
+
+/**
+ * Sets the breadcrumbs on the taxonomy term pages.
+ *
+ * @param object $term
+ *  The taxonomy term object.
+ */
+function _taxonomy_breadcrumb_set_taxonomy_page_breadcrumb($term) {
+  module_load_include('inc', 'taxonomy_breadcrumb');
+  $breadcrumb = _taxonomy_breadcrumb_generate_breadcrumb($term->tid, TRUE);
+
+  // Add the page title.
+  if (variable_get('taxonomy_breadcrumb_page_title', FALSE)) {
+    $breadcrumb[] = check_plain($term->name);
+  }
+
+  drupal_set_breadcrumb($breadcrumb);
 }
 
 /**
@@ -153,6 +166,7 @@ function taxonomy_breadcrumb_form_taxonomy_form_vocabulary_alter(&$form, &$form_
  * Implements hook_form_FORM_ID_alter().
  */
 function taxonomy_breadcrumb_form_taxonomy_form_term_alter(&$form, &$form_state) {
+  // @TODO remove post :)
   if (!(isset($_POST['op']) && $_POST['op'] == t('Delete')) || isset($_POST['confirm'])) {
     // Include the .inc file with all helper functions.
     module_load_include('inc', 'taxonomy_breadcrumb');
@@ -236,7 +250,7 @@ function taxonomy_breadcrumb_taxonomy_vocabulary_update($vocabulary) {
  * Implements hook_taxonomy_vocabulary_insert().
  */
 function _taxonomy_breadcrumb_vocabulary_insert($vid, $path) {
-  taxonomy_breadcrumb_taxonomy('insert', 'taxonomy_vocabulary', $vocabulary);
+  taxonomy_breadcrumb_taxonomy('insert', 'taxonomy_vocabulary', $vid);
 }
 
 /**

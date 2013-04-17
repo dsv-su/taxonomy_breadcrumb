@@ -9,8 +9,7 @@
  * Implements hook_install().
  */
 function taxonomy_breadcrumb_install() {
-  // Create tables.
-
+  // Alter tables' weight.
   $weight = (int) db_query("SELECT weight FROM {system} WHERE name = :name", array(':name' => 'taxonomy'))->fetchField();
   db_update('system')
     ->fields(array(
@@ -19,7 +18,8 @@ function taxonomy_breadcrumb_install() {
     ->condition('name', 'taxonomy_breadcrumb')
     ->execute();
 
-  drupal_set_message('Taxonomy breadcrumb: Taxonomy-based breadcrumbs can now be configured for node pages and taxonomy/term pages on the ' . l('administration page', 'admin/config/user-interface/taxonomy-breadcrumb') . '.');
+  $t = get_t();
+  drupal_set_message($t('Taxonomy breadcrumb: Taxonomy-based breadcrumbs can now be configured for node pages and taxonomy/term pages on the !admin_page.', array('!admin_page' => l($t('administration page'), 'admin/config/user-interface/taxonomy-breadcrumb'))));
 }
 
 /**

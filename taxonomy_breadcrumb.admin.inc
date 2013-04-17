@@ -22,17 +22,6 @@ function taxonomy_breadcrumb_admin_settings($form, &$form_state) {
     '#description' => t('Text to display at top of breadcrumb trail. Typically home or your site name. Leave blank to have no home breadcrumb.'),
   );
 
-/*
-  // TODO - this functionality has been removed from DRUPAL 7.
-  // TODO - is there still a way to do this?
-  $form['settings']['taxonomy_breadcrumb_use_synonym'] = array(
-    '#type' => 'checkbox',
-    '#title' => t('Use the first term synonym instead of term name'),
-    '#default_value' => variable_get('taxonomy_breadcrumb_use_synonym', FALSE),
-    '#description' => t("If enabled and if viewing a node, the term's first synonym will be used in the breadcrumb, instead of the term name."),
-  );
-*/
-
   $form['settings']['taxonomy_breadcrumb_page_title'] = array(
     '#type' => 'checkbox',
     '#title' => t('Show current page title in breadcrumb trail'),
@@ -76,6 +65,11 @@ function taxonomy_breadcrumb_admin_settings($form, &$form_state) {
     '#options' => array_map('check_plain', node_type_get_names()),
     '#description' => t('A list of node types to include or exclude when applying taxonomy-based breadcrumbs.'),
     '#weight' => 20,
+    '#states' => array(
+      'invisible' => array(
+        'input[name="taxonomy_breadcrumb_include_nodes"]' => array('checked' => FALSE),
+      ),
+    ),
   );
 
   return system_settings_form($form);

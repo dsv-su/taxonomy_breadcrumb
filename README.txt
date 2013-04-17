@@ -27,7 +27,7 @@ Taxonomy Breadcrumb
    vocabulary >> term >> term
 
 * Enable the module and any option submodules (see below for details)
-* Configure taxonomy breadcrumb settngs at admin/config/user-interface/taxonomy-breadcrumb
+* Configure taxonomy breadcrumb settings at admin/config/user-interface/taxonomy-breadcrumb
   - set the home breadcrumb text, if desired.
   - under the advanced settings fieldset, select the node types to either include or
     exclude when applying taxonomy-based breadcrumbs.
