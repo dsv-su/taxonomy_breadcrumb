@@ -48,12 +48,14 @@ function _taxonomy_breadcrumb_node_get_lightest_term($nid) {
     else {
       // Get the vocabulary tree.
       $vtree = taxonomy_get_tree($vid);
-      // Return the first associated term found.
+      $termids = array();
+      // Return all associated terms found.
       foreach ($vtree as $term) {
         if (in_array($term->tid, $tids)) {
-          return $term->tid;
+          $termids[] = $term->tid;
         }
       }
+      return $termids;
     }
   }
 }

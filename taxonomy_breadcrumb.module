@@ -93,14 +93,15 @@ function taxonomy_breadcrumb_node_view($node, $view_mode = 'full') {
       $breadcrumb = array();
 
       // Only take over breadcrumbs if terms are associated with the node.
-      if ($tid = _taxonomy_breadcrumb_node_get_lightest_term($node->nid)) {
-        // Generate the breadcrumb using the lightest vocabulary/term found.
-        $breadcrumb = _taxonomy_breadcrumb_generate_breadcrumb($tid);
+      if ($termids = _taxonomy_breadcrumb_node_get_lightest_term($node->nid)) {
 
-        if (variable_get('taxonomy_breadcrumb_page_title', FALSE)) {
-          $breadcrumb[] = check_plain($node->title);
+        // Generate the breadcrumb using the whole list of top level vocabulary/term found.
+        foreach ($termids as $key => $tid) {
+          $breadcrumb = _taxonomy_breadcrumb_generate_breadcrumb($tid);
+          if (variable_get('taxonomy_breadcrumb_page_title', FALSE)) {
+            $breadcrumb[] = check_plain($node->title);
+          }
         }
-
         drupal_set_breadcrumb($breadcrumb);
       }
     }
