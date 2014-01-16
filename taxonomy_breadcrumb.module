@@ -74,6 +74,16 @@ function taxonomy_breadcrumb_menu() {
 }
 
 /**
+ * Implementats hook_ctools_render_alter(). Used to forcely call hook_node_view.
+ */
+function taxonomy_breadcrumb_ctools_render_alter(&$info, &$page, &$context) {
+   $data = array_values($context['contexts']);
+   // Below is nothing but to call hook_node_view which force to pass the
+   // node object.
+   taxonomy_breadcrumb_node_view($data[0]->data, 'full', '');
+}
+
+/**
  * Implements hook_node_view().
  */
 function taxonomy_breadcrumb_node_view($node, $view_mode = 'full') {
