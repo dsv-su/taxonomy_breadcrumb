@@ -43,7 +43,7 @@ function _taxonomy_breadcrumb_node_get_lightest_term($nid) {
 
     // If only a single term is associated with this node.
     if (count($tids) == 1) {
-      return $tids[0];
+      return array('0' => $tids[0]);
     }
     else {
       // Get the vocabulary tree.
