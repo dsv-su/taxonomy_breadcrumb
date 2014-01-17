@@ -90,7 +90,7 @@ function taxonomy_breadcrumb_ctools_render_alter(&$info, &$page, &$context) {
  */
 function taxonomy_breadcrumb_node_view($node, $view_mode = 'full') {
   // @TODO : Let user choose the view mode.
-  if ($view_mode == 'full' && !drupal_is_front_page()) {
+  if ($view_mode == 'full' && !drupal_is_front_page() && isset($node->type)) {
     // Include the .inc file with all helper functions.
     module_load_include('inc', 'taxonomy_breadcrumb');
 
