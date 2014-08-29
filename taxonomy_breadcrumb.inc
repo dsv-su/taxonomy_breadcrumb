@@ -132,5 +132,7 @@ function _taxonomy_breadcrumb_generate_breadcrumb($tid, $is_term_page = FALSE) {
  * Helper function for when i18ntaxonomy module is not installed.
  */
 function _taxonomy_breadcrumb_tt($string_id, $default, $language = NULL) {
-  return function_exists('tt') ? tt($string_id, $default, $language) : $default;
+  global $language ;
+  $langcode = $language->language;
+  return function_exists('i18n_string_translate') ? i18n_string_translate($string_id, $default, array('langcode' => $langcode)) : $default;
 }
